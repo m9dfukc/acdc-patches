@@ -1,0 +1,12 @@
+# Patch SchliereLedPath
+datum:      2026-11-18T21:39:20Z
+class:      SchliereLedPathPatch
+file:       test/SchliereLedPathPatch.hpp sha256 bae66373a5807f01c1c693adcfde345bddd4d077b5d7dd318a307c9064c7aea7
+source:     /Users/m9dfukc/Desktop/acdc/owl
+sdk:        /Users/m9dfukc/Desktop/acdc/owl-patches/OwlProgram
+platform:   OWL3, link patchram (owl2.ld)
+toolchain:  arm-none-eabi-gcc (Arm GNU Toolchain 12.2 (Build arm-12.24)) 12.2.1 20221205
+size:       text 19524 data 580 bss 1164
+bin_size:   20108
+bin_sha256: 98fdd642dd06f102bcc0bf0bec5f5b6f7576ec36a91001f5dc1722e4b087a948
+syx_sha256: 7b788021263d1ef3095bd853cd2c99a4255617656da7e1c6948d4369396203db

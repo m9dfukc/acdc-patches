@@ -1,0 +1,12 @@
+# Patch SchliereLedTest
+datum:      2026-11-18T21:25:50Z
+class:      SchliereLedTestPatch
+file:       test/SchliereLedTestPatch.hpp sha256 6498b187df84e3d43f05b00d01bbc172acb0704251219ae49ed3632f3a10d4d8
+source:     /Users/m9dfukc/Desktop/acdc/owl
+sdk:        /Users/m9dfukc/Desktop/acdc/owl-patches/OwlProgram
+platform:   OWL3, link patchram (owl2.ld)
+toolchain:  arm-none-eabi-gcc (Arm GNU Toolchain 12.2 (Build arm-12.24)) 12.2.1 20221205
+size:       text 14828 data 580 bss 1084
+bin_size:   15412
+bin_sha256: fbfca25085633363b5d0c4555db647d32c0c4662e3dc17c70e06c7f4f61728d9
+syx_sha256: 24dd55f38ac2ef487ede1b3a3842436d54e084995588f4abb8e74ce79a870c4c

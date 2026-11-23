@@ -1,0 +1,9 @@
+.DS_Store
+# Gebaute Patches bleiben lokal, nur BUILD_INFO.txt ist versioniert
+/builds/**/*.bin
+/builds/**/*.syx
+/builds/**/*.elf
+/builds/**/build.log
+/builds-owl2/**/*.bin
+/builds-owl2/**/*.syx
+/builds-owl2/**/build.log

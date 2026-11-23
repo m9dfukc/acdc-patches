@@ -1,0 +1,12 @@
+# Patch Schliere
+datum:      2026-11-18T16:46:30Z
+class:      SchlierePatch
+file:       SchlierePatch.hpp sha256 321e0cc5fc96f0402d979ae6cec2bd9b089c29eee738112eb4d6c2e16bc5a5bd
+source:     /Users/m9dfukc/Desktop/acdc/owl
+sdk:        /Users/m9dfukc/Desktop/acdc/owl-patches/OwlProgram
+platform:   OWL3, link patchram (owl2.ld)
+toolchain:  arm-none-eabi-gcc (Arm GNU Toolchain 12.2 (Build arm-12.24)) 12.2.1 20221205
+size:       text 16741 data 524 bss 1084
+bin_size:   17268
+bin_sha256: e2fb0332906981fd1d8a8e8c4766ba53fb36350a1492ef9d00371be9e683897a
+syx_sha256: 8b283bbc129ebf44b6c27802d266171549ad5fe808eb17f447d0fd745d48506c

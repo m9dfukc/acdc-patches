@@ -1,0 +1,12 @@
+# Patch Tanh3
+datum:      2026-11-17T21:27:33Z
+class:      Tanh3Patch
+file:       Tanh3Patch.hpp sha256 39832c66174ba0877aca5f355a8e3848d0c5c094d7898da6d36d2f3e976b9665
+source:     /Users/m9dfukc/Desktop/acdc/owl
+sdk:        /Users/m9dfukc/Desktop/acdc/owl-patches/OwlProgram
+platform:   OWL3, link patchram (owl2.ld)
+toolchain:  arm-none-eabi-gcc (Arm GNU Toolchain 12.2 (Build arm-12.24)) 12.2.1 20221205
+size:       text 11034 data 524 bss 1084
+bin_size:   11564
+bin_sha256: 72579dc101322e26b81c822e1de2fd0544ea1b3260f9a20061bfa220fcacc3a8
+syx_sha256: a9cc34e4c97fa73789df04baef7bc410f9ba4265ba63e034d27da2c218d77e5e
