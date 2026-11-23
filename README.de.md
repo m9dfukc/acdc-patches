@@ -8,7 +8,7 @@ OWL-Patches für das **Befaco / Rebel Technology AC/DC** (Eurorack-USB-Audiointe
 
 | Datei | Was er tut |
 |---|---|
-| `Tanh3Patch.hpp` | Dreifacher tanh-Waveshaper (Ausgänge sättigen bei ±5 V) mit Mix-Kanal auf Out 4, Pegel über Regler 4 plus CV an In 4. 4× Oversampling je Kanal |
+| `tanh3/` | **Tanh3**: dreifacher tanh-Waveshaper (Ausgänge sättigen bei ±5 V) mit Mix-Kanal auf Out 4, Pegel über Regler 4 plus CV an In 4. 4× Oversampling je Kanal. Siehe [tanh3/README.md](tanh3/README.md) |
 | `schliere/` | **Schliere**: Kette aus Allpässen 2. Ordnung (61 Stufen, in Variante L 160). Laufzeit je Frequenz, Phaser-Kerben, Resonator mit Feedback. Mono hinein, stereo heraus. Sieben Varianten, siehe [schliere/README.md](schliere/README.md) |
 | `AcdcOutput.h` | `AcdcLimited<Patch>`: Stereo-gekoppelter Spitzen-Limiter mit weichem Knie auf Out 1/2, als Hülle um eine vorhandene Patch-Klasse |
 | `AcdcInput.h` | Sperre für die Blockraten-Linien der AC/DC-Eingänge (6/12/18 kHz, Periode 8 Samples). Lernt das Muster in der Stille |
@@ -31,7 +31,7 @@ Gebaut wird mit [OwlProgram](https://github.com/RebelTechnology/OwlProgram) und 
 
 ```bash
 SRC=owl/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
-SRC=owl tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
+SRC=owl/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 ```
 
 ## Lizenz

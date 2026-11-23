@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Host tests of the patch code in this repository (Tanh3Patch.hpp, AcdcOutput.h, AcdcInput.h,
+# Host tests of the patch code in this repository (tanh3/Tanh3Patch.hpp, AcdcOutput.h, AcdcInput.h,
 # schliere/: all Schliere variants, the two LED measurement patches in test/). Compiles each
 # source unchanged against a minimal stand-in for the OwlProgram API (test/Patch.h).
 #   dsp_test.cpp       Tanh3 and limiter: levels, saturation, antialiasing, mix, CV
@@ -18,7 +18,7 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/owldsp.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 STATUS=0
 for T in dsp_test schliere_test blockrate_test ledtest_test ledpath_test; do
-  "$CXX" -std=c++17 -O1 -Wall -I"$ROOT/test" -I"$ROOT" -I"$ROOT/schliere" -o "$WORK/$T" "$ROOT/test/$T.cpp" 2> "$WORK/cc.log" \
+  "$CXX" -std=c++17 -O1 -Wall -I"$ROOT/test" -I"$ROOT" -I"$ROOT/tanh3" -I"$ROOT/schliere" -o "$WORK/$T" "$ROOT/test/$T.cpp" 2> "$WORK/cc.log" \
     || { grep -v xcrun_db "$WORK/cc.log" >&2; echo "Compile failed: $T" >&2; exit 1; }
   echo "== $T"
   "$WORK/$T" || STATUS=1
