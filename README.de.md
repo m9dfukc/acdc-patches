@@ -10,9 +10,11 @@ OWL-Patches für das **Befaco / Rebel Technology AC/DC** (Eurorack-USB-Audiointe
 |---|---|
 | `tanh3/` | **Tanh3**: dreifacher tanh-Waveshaper (Ausgänge sättigen bei ±5 V) mit Mix-Kanal auf Out 4, Pegel über Regler 4 plus CV an In 4. 4× Oversampling je Kanal. Siehe [tanh3/README.md](tanh3/README.md) |
 | `schliere/` | **Schliere**: Kette aus Allpässen 2. Ordnung (61 Stufen, in Variante L 160). Laufzeit je Frequenz, Phaser-Kerben, Resonator mit Feedback. Mono hinein, stereo heraus. Sieben Varianten, siehe [schliere/README.md](schliere/README.md) |
+| `plateau/` | **Plateau**: Port von Valleys Plateau (Plattenhall nach Dattorro 1997, ValleyRackFree 2.4.5) in float, auf vier Makro-Reglern (Mix, Space, Decay als RT60 mit Freeze, Character). Morph-CV an In 3, Freeze/Clear-Gate an In 4, Wet mono und eine Energie-CV an Out 3/4. Am Gerät aus dem RAM gelaufen, 51 % CPU, noch nicht gehört. Siehe [plateau/README.md](plateau/README.md) |
 | `AcdcOutput.h` | `AcdcLimited<Patch>`: Stereo-gekoppelter Spitzen-Limiter mit weichem Knie auf Out 1/2, als Hülle um eine vorhandene Patch-Klasse |
 | `AcdcInput.h` | Sperre für die Blockraten-Linien der AC/DC-Eingänge (6/12/18 kHz, Periode 8 Samples). Lernt das Muster in der Stille |
 | `test/SchliereLedTestPatch.hpp` | Mess-Patch: schaltet die LEDs nach festem Zeitplan, um zu messen, was LED-Wechsel an den Ausgängen anrichten |
+| `test/PlateauProfilePatch.hpp` | Mess-Patch: Plateau mit Taktzählern je Abschnitt, Zugriffszeiten der Speicher und den Cache-Bits der MCU, meldet sie als Program Message |
 | `test/SchliereLedPathPatch.hpp` | Mess-Patch: schaltet die LEDs und misst die Verschiebung an den rohen Eingängen selbst, meldet sie als Program Message |
 
 ## Host-Tests
@@ -23,7 +25,7 @@ OWL-Patches für das **Befaco / Rebel Technology AC/DC** (Eurorack-USB-Audiointe
 test/run.sh
 ```
 
-Braucht einen C++17-Compiler. Exit-Code 0 heißt: alle Fälle bestanden.
+Braucht einen C++17-Compiler. Exit-Code 0 heißt: alle Fälle bestanden. Mit `VALLEY_SRC=<ValleyRackFree 2.4.5>/src` vergleicht es zusätzlich den Plateau-Kern mit dem Original-Code.
 
 ## Bauen und Hochladen
 
@@ -32,6 +34,7 @@ Gebaut wird mit [OwlProgram](https://github.com/RebelTechnology/OwlProgram) und 
 ```bash
 SRC=owl/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
 SRC=owl/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
+LINK=plusram SRC=owl/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
 ```
 
 ## Lizenz
