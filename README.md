@@ -36,8 +36,6 @@ SRC=owl/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.
 SRC=owl tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 ```
 
-`builds/<name>/BUILD_INFO.txt` records each build that ran on the device: source hash, SDK, platform, toolchain, size and the SHA-256 of `patch.bin` and the SysEx file. The binaries themselves are not in the repository. `builds-owl2/` holds the first Tanh3 build for the Cortex-M4 target.
-
 ## License
 
 GPL-3.0-or-later, the license of OwlProgram, which every built patch links against. Full text: [LICENSE](LICENSE).
