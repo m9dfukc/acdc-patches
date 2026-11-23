@@ -91,7 +91,7 @@ listening.
 | LED 4 | Red while the loop limiter works |
 
 Details are in the header of `SchlierePatch.hpp`, for A in `SchliereAPatch.hpp`, for M in
-`SchliereMPatch.hpp`, for O in `SchliereOPatch.hpp`, for S in `SchliereSPatch.hpp`, for L in `SchliereLPatch.hpp`, in German.
+`SchliereMPatch.hpp`, for O in `SchliereOPatch.hpp`, for S in `SchliereSPatch.hpp`, for L in `SchliereLPatch.hpp`.
 
 ### Build and test
 

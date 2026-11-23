@@ -1,23 +1,23 @@
 #ifndef __SCHLIERE_LED_TEST_PATCH_HPP__
 #define __SCHLIERE_LED_TEST_PATCH_HPP__
 
-/* Mess-Patch, kein Musik-Patch: Schliere mit unverändertem Klang, aber die Eingangs-LEDs
- * laufen nach der Uhr durch feste Zustände. Damit lässt sich am Ausgang messen, was die
- * LEDs selbst beitragen, ohne dass sich ein Regler oder der Abgriff bewegt (messlog D72:
- * In Schliere hängen LEDs und Abgriff beide an Regler 3).
+/* Measurement patch, not a music patch: Schliere with unchanged sound, but the input LEDs
+ * step through fixed states by the clock. This makes it possible to measure at the output
+ * what the LEDs themselves contribute, without a knob or the tap moving (messlog D72:
+ * in Schliere, the LEDs and the tap both depend on knob 3).
  *
- * Ablauf, je PHASE_S Sekunden, beginnt beim Laden des Patches und wiederholt sich:
- *   0  alle aus                       Bezug
- *   1  LED 1 rot
- *   2  LED 1–3 rot
- *   3  LED 1–4 rot
- *   4  alle aus                       Bezug
- *   5  LED 1–3 blinken rot mit 40 Hz  wie ein Flackern an der Grenze einer Haltezone
- *   6  alle aus                       Bezug
- *   7  LED 1–3 grün mit 60 %          Gegenprobe: gedimmtes Grün fiepst nachweislich (D67)
+ * Sequence, PHASE_S seconds each, starts when the patch is loaded and repeats:
+ *   0  All off                        Reference
+ *   1  LED 1 red
+ *   2  LED 1–3 red
+ *   3  LED 1–4 red
+ *   4  All off                        Reference
+ *   5  LED 1–3 blink red at 40 Hz     Like a flicker at the edge of a hold zone
+ *   6  All off                        Reference
+ *   7  LED 1–3 green at 60 %          Cross-check: dimmed green demonstrably whines (D67)
  *
- * „Rot“ heißt in der Firmware Rot plus Grün mit Tastgrad 1023/1024 (messlog D72).
- * Die Anzeige von Schliere selbst wird überschrieben. Bauen:
+ * "Red" in the firmware means red plus green with duty cycle 1023/1024 (messlog D72).
+ * Schliere's own display is overwritten. Build:
  *   SRC=owl tools/build_owl_patch.sh SchliereLedTest SchliereLedTestPatch test/SchliereLedTestPatch.hpp
  */
 
@@ -27,7 +27,7 @@ class SchliereLedTestPatch : public SchlierePatch {
 public:
   static constexpr float PHASE_S = 5.0f;
   static constexpr size_t PHASES = 8;
-  static constexpr size_t FLICKER_BLOCKS = 75; // Blöcke je Halbperiode: 12,5 ms an, 12,5 ms aus
+  static constexpr size_t FLICKER_BLOCKS = 75; // blocks per half period: 12.5 ms on, 12.5 ms off
   static constexpr float RED = 1.0f;
   static constexpr float GREEN = 0.6f;
 

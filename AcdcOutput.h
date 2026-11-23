@@ -1,30 +1,30 @@
 #ifndef __ACDC_OUTPUT_H__
 #define __ACDC_OUTPUT_H__
 
-/* Ausgangsstufe für FX-Patches auf dem AC/DC: Limiter auf den Audio-Ausgängen 1/2.
+/* Output stage for FX patches on the AC/DC: limiter on audio outputs 1/2.
  *
- * Anlass (Nutzer, 2026-11-17): Manche Patches übersteuern am Ausgang, z. B. Grainz
- * (überlappende Grains, Feedback). Der DAC kappt bei Vollausschlag hart.
+ * Motivation (user, 2026-11-17): some patches overdrive the output, e.g. Grainz
+ * (overlapping grains, feedback). The DAC clips hard at full scale.
  *
- * Aufbau:
- *   1. Spitzenwert-Limiter, beide Kanäle gekoppelt (das Stereobild bleibt stehen):
- *      Hüllkurve über max(|L|, |R|), Anstieg 1 ms, Abfall 150 ms. Liegt sie über
- *      THRESHOLD, wird auf THRESHOLD heruntergeregelt. Darunter bleibt das Signal
- *      unverändert.
- *   2. Weiche Kennlinie für das, was in der Anstiegszeit durchrutscht: ab THRESHOLD
- *      biegt ein tanh-Knie ab, über CEILING kommt nichts hinaus.
+ * Structure:
+ *   1. Peak limiter, both channels linked (the stereo image stays in place):
+ *      envelope over max(|L|, |R|), attack 1 ms, release 150 ms. If it lies above
+ *      THRESHOLD, the gain is reduced down to THRESHOLD. Below that the signal stays
+ *      unchanged.
+ *   2. Soft curve for whatever slips through during the attack time: from THRESHOLD
+ *      a tanh knee bends off, nothing gets beyond CEILING.
  *
- * Pegel: 1.0 = Vollausschlag ≈ 10 V Spitze am Ausgang (AUDIO_OUTPUT_GAIN 125).
- * THRESHOLD 0.5 = 5 V Spitze = 10 Vpp, der übliche Eurorack-Audiopegel.
+ * Levels: 1.0 = full scale ≈ 10 V peak at the output (AUDIO_OUTPUT_GAIN 125).
+ * THRESHOLD 0.5 = 5 V peak = 10 Vpp, the usual Eurorack audio level.
  *
- * Die Kanäle 3/4 bleiben unberührt, die FX-Patches geben dort CV aus.
+ * Channels 3/4 stay untouched, the FX patches output CV there.
  *
- * Einbinden ohne Eingriff in fremde Quellen: AcdcLimited<XyzPatch> erbt vom Patch und
- * hängt den Limiter hinter processAudio(). tools/build_owl_patch.sh erzeugt die Hülle
- * mit LIMIT=1.
+ * Integration without touching third-party sources: AcdcLimited<XyzPatch> inherits from the
+ * patch and appends the limiter after processAudio(). tools/build_owl_patch.sh generates the
+ * wrapper with LIMIT=1.
  *
- * basicmaths.h ersetzt expf() durch eine Tabellen-Näherung. (expf)(x) in Klammern ruft
- * die genaue libm-Funktion.
+ * basicmaths.h replaces expf() with a table approximation. (expf)(x) in parentheses calls
+ * the exact libm function.
  */
 
 #include "Patch.h"
@@ -47,8 +47,8 @@ public:
     for(size_t i = 0; i < size; ++i){
       float l = left[i];
       float r = right[i];
-      // NaN oder Unsinn aus dem Patch: stumm statt hängender Hüllkurve (je Kanal prüfen,
-      // ein Vergleich mit NaN ist immer falsch)
+      // NaN or garbage from the patch: silence instead of a stuck envelope (check each
+      // channel, a comparison with NaN is always false)
       if(!(fabsf(l) < 100.0f))
         l = 0.0f;
       if(!(fabsf(r) < 100.0f))
@@ -65,7 +65,7 @@ public:
     }
   }
 
-  /* linear bis THRESHOLD, darüber tanh-Knie mit Asymptote CEILING */
+  /* linear up to THRESHOLD, above it a tanh knee with asymptote CEILING */
   static float knee(float x){
     const float a = fabsf(x);
     if(a <= THRESHOLD)
@@ -77,8 +77,8 @@ public:
 
 private:
   float envelope = 0.0f;
-  float attack = 0.0206f;   // 1 ms bei 48 kHz
-  float release = 0.000139f; // 150 ms bei 48 kHz
+  float attack = 0.0206f;   // 1 ms at 48 kHz
+  float release = 0.000139f; // 150 ms at 48 kHz
 };
 
 template<class BasePatch>

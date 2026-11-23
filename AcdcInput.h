@@ -1,39 +1,38 @@
 #ifndef __ACDC_INPUT_H__
 #define __ACDC_INPUT_H__
 
-/* Eingangsstufe für FX-Patches auf dem AC/DC: Sperre für die Blockraten-Linien.
+/* Input stage for FX patches on the AC/DC: canceller for the block-rate lines.
  *
- * Anlass (messlog D68, D69): In den ADC-Daten des AC/DC steckt eine Störung im Takt der
- * Audio-Blöcke, fs/8 = 6000 Hz mit Vielfachen bei 12, 18 und 24 kHz. Die Rechenlast
- * eines Patches hebt sie an (Schliere: +3,8 dB), und ein FX-Patch reicht sie an die
- * Ausgänge durch. Ohne Eingangssignal ist sie als Fiepsen zu hören.
+ * Motivation (measurement log D68, D69): the ADC data of the AC/DC carry interference at the
+ * rate of the audio blocks, fs/8 = 6000 Hz with multiples at 12, 18 and 24 kHz. The CPU load
+ * of a patch raises it (Schliere: +3.8 dB), and an FX patch passes it on to the outputs.
+ * Without an input signal it can be heard as a whine.
  *
- * Prinzip: Die Störung ist sample-synchron und wiederholt sich alle 8 Samples exakt.
- * Für jede der 8 Positionen führt die Sperre einen langsamen Mittelwert des Eingangs.
- * Die Abweichung dieses Mittelwerts vom Mittel über die letzten 8 Samples ist genau der
- * Anteil mit Periode 8. Er wird abgezogen. Gleichspannung und alles andere bleiben
- * unberührt: Die Sperre wirkt wie vier sehr schmale Kerben bei 6, 12, 18 und 24 kHz.
+ * Principle: the interference is sample-synchronous and repeats exactly every 8 samples.
+ * For each of the 8 positions the canceller keeps a slow average of the input. The deviation
+ * of this average from the mean over the last 8 samples is exactly the component with
+ * period 8. It is subtracted. DC and everything else stay untouched: the canceller acts like
+ * four very narrow notches at 6, 12, 18 and 24 kHz.
  *
- * Gelernt wird nur in der Stille. Als Maß dient der Unterschied zum Sample 8 Takte
- * vorher: Darin fehlen Gleichspannung und Störung, übrig bleiben Signal und Rauschen.
- * Liegt die Hüllkurve dieses Unterschieds über THRESHOLD (≈ 20 mV), bleibt die Schätzung
- * stehen. Laute Musik kann sie so nicht verziehen, und die Kerben klingen nach einem
- * lauten Signal nicht nach.
+ * Learning happens only in silence. The measure is the difference to the sample 8 samples
+ * earlier: it contains neither DC nor the interference, what remains is signal and noise.
+ * If the envelope of this difference lies above THRESHOLD (≈ 20 mV), the estimate is held.
+ * Loud music therefore cannot skew it, and the notches do not ring on after a loud signal.
  *
- * Grenzen:
- *   - Ein Ton genau auf 6000,0 Hz (±0,3 Hz, im Takt des Geräts) sieht aus wie die
- *     Störung. Die Korrektur ist deshalb auf MAX_CORRECTION (≈ 10 mV) begrenzt, einem
- *     solchen Ton fehlen höchstens 13 mV (Host-Test).
- *   - Ändert sich die Rechenlast des Patches, während es laut ist, passt die Schätzung
- *     erst in der nächsten leisen Stelle wieder.
- *   - Die Mischprodukte aus Kamm und Blockrate (D69: −104 dB) haben nicht die Periode 8
- *     und bleiben, ebenso der Kamm selbst.
+ * Limits:
+ *   - A tone at exactly 6000.0 Hz (±0.3 Hz, in the device clock) looks like the
+ *     interference. The correction is therefore limited to MAX_CORRECTION (≈ 10 mV), such a
+ *     tone loses at most 13 mV (host test).
+ *   - If the CPU load of the patch changes while it is loud, the estimate fits again only
+ *     at the next quiet passage.
+ *   - The mixing products of comb and block rate (D69: −104 dB) do not have period 8 and
+ *     remain, as does the comb itself.
  *
- * Aufruf: process(sample) für jedes Sample eines Kanals, ohne Lücken. Die Position im
- * Takt zählt die Sperre selbst mit.
+ * Usage: process(sample) for every sample of a channel, without gaps. The canceller counts
+ * the position within the period itself.
  *
- * basicmaths.h ersetzt expf() durch eine Tabellen-Näherung. (expf)(x) in Klammern ruft
- * die genaue libm-Funktion.
+ * basicmaths.h replaces expf() with a table approximation. (expf)(x) in parentheses calls
+ * the exact libm function.
  */
 
 #include <math.h>
@@ -41,9 +40,9 @@
 
 class AcdcBlockRateCanceller {
 public:
-  static constexpr size_t PERIOD = 8;            // Audio-Blockgröße der Firmware
-  static constexpr float LEARN_S = 0.5f;         // Zeitkonstante der Mittelwerte
-  static constexpr float RELEASE_S = 0.05f;      // so lange nach einem lauten Signal ruht das Lernen
+  static constexpr size_t PERIOD = 8;            // audio block size of the firmware
+  static constexpr float LEARN_S = 0.5f;         // time constant of the averages
+  static constexpr float RELEASE_S = 0.05f;      // learning pauses this long after a loud signal
   static constexpr float THRESHOLD = 0.002f;     // 20 mV
   static constexpr float MAX_CORRECTION = 0.001f; // 10 mV
 
@@ -62,7 +61,7 @@ public:
       const float delta = learn * (x - mean[i]);
       mean[i] += delta;
       sum += delta;
-      if(++drift >= 4096){ // Rundungsfehler der mitgeführten Summe ab und zu ausgleichen
+      if(++drift >= 4096){ // now and then remove the rounding error of the running sum
         drift = 0;
         sum = 0.0f;
         for(size_t n = 0; n < PERIOD; ++n) sum += mean[n];
@@ -78,9 +77,9 @@ private:
   float mean[PERIOD] = {};
   float last[PERIOD] = {};
   float sum = 0.0f;
-  float envelope = 1.0f;     // beginnt „laut“: erst lernen, wenn ein voller Takt bekannt ist
-  float learn = 0.000333f;   // 0,5 s bei 48 kHz
-  float release = 0.999583f; // 50 ms bei 48 kHz
+  float envelope = 1.0f;     // starts "loud": learn only once a full period is known
+  float learn = 0.000333f;   // 0.5 s at 48 kHz
+  float release = 0.999583f; // 50 ms at 48 kHz
   size_t phase = 0;
   size_t drift = 0;
 };

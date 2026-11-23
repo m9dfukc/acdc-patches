@@ -1,4 +1,4 @@
-// Host-Test für owl/test/SchliereLedPathPatch.hpp: Zeitplan, Ausgänge je Phase und die Messung am Eingang
+// Host test for owl/test/SchliereLedPathPatch.hpp: schedule, outputs per phase and the measurement at the input
 #include "SchliereLedPathPatch.hpp"
 #include <cmath>
 #include <cstdio>
@@ -13,8 +13,8 @@ void debugMessage(const char* msg, int a, int b, int c){
 int main(){
   SchliereLedPathPatch p;
   for(int i = 0; i < 4; ++i) p.params[i] = 0.5f;
-  // Modell: Jede leuchtende LED verschiebt In 1 um 2e-4 und In 3 um −5e-5, In 2 bleibt. Die LED folgt dem
-  // Parameter einen Block später. Dazu Offset, Rauschen und 50 Hz Brumm auf allen Eingängen.
+  // Model: each lit LED shifts In 1 by 2e-4 and In 3 by −5e-5, In 2 stays. The LED follows the
+  // parameter one block later. Plus offset, noise and 50 Hz hum on all inputs.
   unsigned s = 7; int lit = 0; double maxMute = 0, calPeak = 0, gainErr = 0; bool ledsOk = true;
   for(size_t blk = 0; blk < 100 * 6000; ++blk){
     AudioBuffer b; b.ch.assign(4, std::vector<float>(8));

@@ -1,28 +1,28 @@
 #ifndef __SCHLIERE_S_PATCH_HPP__
 #define __SCHLIERE_S_PATCH_HPP__
 
-/* Schliere S (sanft): SchliereO mit ganz leichter Glättung der Feedback-Modulation. Wunsch des
- * Nutzers (2026-11-19): O gefällt fast am besten, bei Feedback-Modulation aber ein ganz klein
- * wenig weniger Glitch.
+/* Schliere S (sanft, "gentle"): SchliereO with very light smoothing of the feedback
+ * modulation. User request (2026-11-19): O is almost the favourite, but with feedback
+ * modulation it should have a tiny bit less glitch.
  *
- * Der CV an In 4 läuft durch zwei Tiefpässe 1. Ordnung in Reihe (trapezförmig, Nullstelle bei
- * fs/2), bevor SchliereO ihn verarbeitet. Sonst ist alles wie bei SchliereO: Totzone, weiches
- * Knie und die Produkte mit 96 kHz. Geglättet wird hier vor der Kennlinie, nicht danach wie
- * bei SchlierePatch: SchliereO bleibt so unberührt und bytegleich mit seinem Slot (schon ein
- * Template oder eine Änderung in SchliereOPatch.hpp ändert dessen Binary). Die Kennlinie
- * rechnet SchliereO mit 96 kHz, ihre Oberwellen falten dort kaum.
+ * The CV at In 4 runs through two first-order lowpasses in series (trapezoidal, zero at
+ * fs/2) before SchliereO processes it. Everything else is as in SchliereO: dead zone, soft
+ * knee and the products at 96 kHz. Here the smoothing happens before the transfer curve, not
+ * after it as in SchlierePatch: this way SchliereO stays untouched and byte-identical with its
+ * slot (even a template or a change in SchliereOPatch.hpp changes its binary). SchliereO
+ * computes the transfer curve at 96 kHz, where its harmonics hardly fold.
  *
- * Regler 4 wird wie in allen Varianten nur mit 10 ms geglättet. Messung: messlog D80.
+ * As in all variants, knob 4 is smoothed only with 10 ms. Measurement: measurement log D80.
  */
 
 #include "SchliereOPatch.hpp"
 
 #ifndef SCHLIERE_S_HZ
-#define SCHLIERE_S_HZ 12000.0f // Grenzfrequenz je Pol
+#define SCHLIERE_S_HZ 12000.0f // cutoff frequency per pole
 #endif
 
 class SchliereSPatch : public SchliereOPatch {
-  float s1 = 0.0f, s2 = 0.0f; // Zustand der beiden Tiefpässe für In 4
+  float s1 = 0.0f, s2 = 0.0f; // state of the two lowpasses for In 4
   float G;
   bool started = false;
 public:

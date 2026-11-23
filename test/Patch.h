@@ -1,4 +1,4 @@
-// Minimaler Ersatz für die OwlProgram-API, nur für den Host-Test
+// Minimal stand-in for the OwlProgram API, only for the host test
 #pragma once
 #include <cstddef>
 #include <cstdint>

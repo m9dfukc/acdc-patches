@@ -1,110 +1,113 @@
 #ifndef __SCHLIERE_PATCH_HPP__
 #define __SCHLIERE_PATCH_HPP__
 
-/* Schliere: lange Allpass-Kette für das AC/DC, nach dem Vorbild eines digitalen
- * Eurorack-Moduls mit 98 Allpass-Polen je Sektion (Nutzer-Wunsch 2026-11-18). Nachgebaut
- * ist eine Sektion: mono hinein, stereo heraus, dazu zwei abgeleitete Signale.
+/* Schliere: long allpass chain for the AC/DC, modelled on a digital Eurorack module with
+ * 98 allpass poles per section (user request 2026-11-18). One section is reproduced:
+ * mono in, stereo out, plus two derived signals.
  *
- * Übersicht über alle Varianten (A, Z, W, O, M): README.md in diesem Ordner.
- * Diese Datei enthält SchlierePatch (als „SchliereZ“ gebaut) und, über SchliereWPatch.hpp,
- * SchliereWPatch. SchliereOPatch.hpp baut darauf auf.
+ * Overview of all variants (A, Z, W, O, M): README.md in this folder.
+ * This file contains SchlierePatch (built as "SchliereZ") and, via SchliereWPatch.hpp,
+ * SchliereWPatch. SchliereOPatch.hpp builds on it.
  *
- *   SchlierePatch   Tap überblendet zwischen sieben festen Abgriffen der Kette, wie das
- *                   Vorbild. Zwischen zwei Abgriffen entstehen Kerben wie bei einem Phaser.
- *                   Moduliert man den Tap, blendet man die Kerben ein und aus: Das ist eine
- *                   Amplitudenmodulation und klingt bei Audio-Rate metallisch, nach Ringmod.
- *   SchliereWPatch  (über SchliereWPatch.hpp) wie SchlierePatch, aber die Feedback-Menge
- *                   wird nur mit 12 kHz statt 1,5 kHz geglättet (wild). Mit Audio an In 4, etwa einem Ausgang des
- *                   Patches, entstehen fast so viele neue Obertöne wie in Fassung 3, gefaltet
- *                   wird 9–13 dB weniger, und die Feedback-Menge wird nicht hart abgeschnitten
- *                   (messlog D80, zweiter Nachtrag). Der Nutzer fand Fassung 4 zu zahm.
+ *   SchlierePatch   Tap crossfades between seven fixed taps of the chain, like the
+ *                   model. Between two taps, notches appear as in a phaser.
+ *                   Modulating the tap fades the notches in and out: that is an
+ *                   amplitude modulation and sounds metallic at audio rate, like a ring mod.
+ *   SchliereWPatch  (via SchliereWPatch.hpp) like SchlierePatch, but the feedback amount
+ *                   is smoothed at only 12 kHz instead of 1.5 kHz (wild). With audio at In 4,
+ *                   e.g. an output of the patch, almost as many new overtones appear as in
+ *                   version 3, there is 9–13 dB less folding, and the feedback amount is not
+ *                   hard-clipped (measurement log D80, second addendum). The user found
+ *                   version 4 too tame.
  *
- * Prinzip: gleiche Allpässe 2. Ordnung in Reihe (1 Stufe = 2 Pole). Jede Stufe lässt
- * alle Frequenzen gleich laut durch und verzögert sie unterschiedlich lang. In der Summe
- * wird daraus eine hörbare, frequenzabhängige Laufzeit: Transienten verschmieren zu
- * einem Zwitschern, mit Feedback entsteht ein Resonator.
+ * Principle: identical second-order allpasses in series (1 stage = 2 poles). Each stage
+ * passes all frequencies at the same level and delays them by different amounts. Taken
+ * together this yields an audible, frequency-dependent delay: transients smear into
+ * a chirp, with feedback a resonator emerges.
  *
- *   Regler 1   Frequency  20 Hz … 20 kHz: wo die Laufzeit wirkt
- *   Regler 2   Resonance  Q 0,01 … 16: niedrig = Bass kommt spät, hoch = ein schmales
- *                         Band um Frequency klingt nach
- *   Regler 3   Tap        Abgriff in der Kette, sieben Rastpunkte mit Haltezonen. Zwischen
- *                         zwei Rastpunkten wird übergeblendet, dabei entstehen Kerben (je
- *                         2 Pole Abstand eine Kerbe).
- *   Regler 4   Feedback   0 … 95 %, Ausgang 1 zurück auf den Eingang. Mit CV bis 97 %,
- *                         ab 90 % (Regler und CV zusammen) mit weichem Knie
+ *   Knob 1     Frequency  20 Hz … 20 kHz: where the delay acts
+ *   Knob 2     Resonance  Q 0.01 … 16: low = bass arrives late, high = a narrow
+ *                         band around Frequency rings on
+ *   Knob 3     Tap        tap position in the chain, seven detents with hold zones. Between
+ *                         two detents it crossfades, which creates notches (one notch
+ *                         per 2 poles of distance).
+ *   Knob 4     Feedback   0 … 95 %, Out 1 back to the input. With CV up to 97 %,
+ *                         soft knee from 90 % (knob and CV combined)
  *
- *   In 1       Audio (oder CV: der Signalweg ist DC-gekoppelt)
- *   In 2       Frequency-CV, 1 V/Okt, addiert zum Regler. Nicht kalibriert, ohne Totzone:
- *              Der Offset des offenen Eingangs (−0,2…−0,4 V, D36) verstimmt nur leicht.
- *   In 3       Tap-CV, ±5 V = voller Regelweg, wirkt pro Sample (bis Audio-Rate)
- *   In 4       Feedback-CV, ±5 V = voller Regelweg, wirkt pro Sample. Unter null kehrt
- *              sich die Schleife um (negatives Feedback, Spitzen und Täler tauschen).
- *              In 3 und In 4 sind bis ±0,45 V tot, damit der offene Eingang nichts
- *              verstellt. Bis ±0,65 V setzt der CV weich ein, darüber wirkt er linear,
- *              um 0,55 V versetzt. Die weiche Kante ist wichtig bei bipolarer Modulation:
- *              Ein harter Knick im Nulldurchgang wirkt wie Übernahmeverzerrung und bringt
- *              Oberwellen des Modulators, die bei Audio-Rate über fs/2 falten.
+ *   In 1       Audio (or CV: the signal path is DC-coupled)
+ *   In 2       Frequency CV, 1 V/oct, added to the knob. Not calibrated, no dead zone:
+ *              the offset of the open input (−0.2…−0.4 V, D36) detunes only slightly.
+ *   In 3       Tap CV, ±5 V = full travel, acts per sample (up to audio rate)
+ *   In 4       Feedback CV, ±5 V = full travel, acts per sample. Below zero the loop
+ *              inverts (negative feedback, peaks and troughs swap places).
+ *              In 3 and In 4 are dead up to ±0.45 V so that the open input does not
+ *              shift anything. Up to ±0.65 V the CV sets in softly, above that it acts
+ *              linearly, offset by 0.55 V. The soft edge matters for bipolar modulation:
+ *              a hard kink at the zero crossing acts like crossover distortion and brings
+ *              harmonics of the modulator, which fold above fs/2 at audio rate.
  *
- *   Out 1 (L)  Abgriffe 2, 18, 34, 50, 66, 82,  98 Pole (Stufen 1, 9 … 49)
- *   Out 2 (R)  Abgriffe 2, 22, 42, 62, 82, 102, 122 Pole (Stufen 1, 11 … 61)
- *              Am untersten Rastpunkt sind L und R gleich (mono, fast unbearbeitet).
- *              Je höher der Abgriff, desto weiter laufen beide auseinander: Jedes Ohr
- *              bekommt alle Frequenzen gleich laut, aber zu anderen Zeiten.
- *   Out 3      Diff = (L − R) / 2: das, was die beiden Seiten unterscheidet. Hat Spitzen,
- *              wo die Monosumme L + R Kerben hat.
- *   Out 4      Tail = Ende der Kette (122 Pole), unabhängig vom Tap-Regler. Zusammen mit
- *              Out 1 lässt sich im Rack selbst zwischen früh und spät überblenden.
+ *   Out 1 (L)  Taps at 2, 18, 34, 50, 66, 82,  98 poles (stages 1, 9 … 49)
+ *   Out 2 (R)  Taps at 2, 22, 42, 62, 82, 102, 122 poles (stages 1, 11 … 61)
+ *              At the lowest detent L and R are equal (mono, almost unprocessed).
+ *              The higher the tap, the further the two drift apart: each ear
+ *              gets all frequencies at the same level, but at different times.
+ *   Out 3      Diff = (L − R) / 2: what distinguishes the two sides. Has peaks
+ *              where the mono sum L + R has notches.
+ *   Out 4      Tail = end of the chain (122 poles), independent of the Tap knob. Together
+ *              with Out 1 you can crossfade between early and late yourself in the rack.
  *
- * Tap-Modulation (Fassung 4, 2026-11-19): Bei Audio-Rate am Tap-CV faltete Fassung 3
- * Seitenbänder über fs/2. Im Modell mit 5 kHz am Eingang und 441 Hz am Tap-CV lagen die
- * gefalteten Linien bei ±3 V nur 34 dB unter dem Signal. Ursachen waren die harte
- * Totzone, die Knicke am Rand der Haltezonen und der ungeglättete CV. Fassung 4 setzt den
- * CV weich ein (siehe In 3), überblendet am Rand der Haltezonen mit einer S-Kurve und
- * glättet die Gewichte der Abgriffe mit zwei Tiefpässen 1. Ordnung in Reihe (je 3 kHz,
- * zusammen ≈ 1,9 kHz, trapezförmig mit Nullstelle bei fs/2). Geglättet werden die
- * Gewichte, nicht der CV: Die Knicke entstehen erst in der Abbildung CV → Gewicht. Weil
- * alle Gewichte durch dasselbe lineare Filter laufen, bleibt ihre Summe 1. Modulation über
- * ≈ 2 kHz wird dadurch gedämpft, das Vorbild glättet ebenfalls (Forum, Thread 296092 #36).
- * Dasselbe gilt für die Feedback-Menge (In 4): Steckt man einen Ausgang des Patches auf
- * In 4, klang Fassung 3 nach hartem Clipping (Nutzer, 2026-11-19). Sie hat jetzt ein
- * weiches Knie statt der harten Grenze und zwei Tiefpässe mit je 1,5 kHz (messlog D80).
+ * Tap modulation (version 4, 2026-11-19): with audio rate at the Tap CV, version 3 folded
+ * sidebands above fs/2. In the simulation with 5 kHz at the input and 441 Hz at the Tap CV,
+ * the folded lines at ±3 V were only 34 dB below the signal. The causes were the hard
+ * dead zone, the kinks at the edge of the hold zones and the unsmoothed CV. Version 4 lets
+ * the CV set in softly (see In 3), crossfades at the edge of the hold zones with an S-curve
+ * and smooths the tap weights with two first-order lowpasses in series (3 kHz each,
+ * ≈ 1.9 kHz combined, trapezoidal with a zero at fs/2). It is the weights that are
+ * smoothed, not the CV: the kinks only arise in the mapping CV → weight. Because all
+ * weights pass through the same linear filter, their sum stays 1. Modulation above
+ * ≈ 2 kHz is attenuated as a result; the model smooths as well (forum, thread 296092 #36).
+ * The same applies to the feedback amount (In 4): with an output of the patch patched into
+ * In 4, version 3 sounded like hard clipping (user, 2026-11-19). It now has a soft knee
+ * instead of the hard limit and two lowpasses at 1.5 kHz each (measurement log D80).
  *
- * Feedback: Out 1 (vor der Ausgangsstufe) geht über einen Hochpass (10 Hz) und eine
- * weiche Begrenzung (ab 5 V, höchstens 10 V) zurück auf den Eingang. Der Hochpass sitzt
- * nur in der Schleife: Der Vorwärtsweg bleibt DC-gekoppelt, aber Feedback verstärkt den
- * Eingangsoffset nicht (ohne Hochpass wären es bei 90 % zehnfach). Die Schleife schwingt
- * nicht von selbst (Verstärkung unter 1). Der Eingang wird mit √(1 − fb²) abgesenkt,
- * damit die Lautheit bei viel Feedback etwa gleich bleibt.
+ * Feedback: Out 1 (before the output stage) goes through a highpass (10 Hz) and a
+ * soft limiter (from 5 V, at most 10 V) back to the input. The highpass sits only
+ * in the loop: the forward path stays DC-coupled, but feedback does not amplify the
+ * input offset (without the highpass it would be tenfold at 90 %). The loop does not
+ * oscillate on its own (gain below 1). The input is attenuated by √(1 − fb²) so that
+ * the loudness stays roughly the same with a lot of feedback.
  *
- * Filterform: Zustandsvariablenfilter mit trapezförmiger Integration, Allpass = Eingang
- * − 2k · Bandpass. Die Direktform mit zwei Multiplikationen wäre billiger, rauscht in
- * float aber bei tiefen Frequenzen und hohem Q um 20 bis 60 dB mehr (Host-Vergleich,
- * 61 Stufen: 100 Hz, Q 16 → −71 gegen −115 dB). Alle vollen Stufen teilen sich die
- * Koeffizienten. Frequency und Resonance werden einmal pro Block berechnet und über den
- * Block linear geführt, sehr schnelle Modulation der Frequenz wird dadurch geglättet.
+ * Filter form: state-variable filter with trapezoidal integration, allpass = input
+ * − 2k · bandpass. The direct form with two multiplications would be cheaper, but in
+ * float it is 20 to 60 dB noisier at low frequencies and high Q (host comparison,
+ * 61 stages: 100 Hz, Q 16 → −71 vs. −115 dB). All full stages share the
+ * coefficients. Frequency and Resonance are computed once per block and ramped linearly
+ * across the block, which smooths very fast modulation of the frequency.
  *
- * Eingang: In 1 läuft zuerst durch die Sperre für die Blockraten-Linien (AcdcInput.h).
- * Die ADC-Daten tragen eine Störung bei 6, 12 und 18 kHz, die Rechenlast dieses Patches
- * hebt sie um 3,8 dB (messlog D69), und ohne Sperre käme sie mit Faktor 1 an die
- * Ausgänge (D68). Die Sperre lernt die Störung in der Stille und zieht sie ab.
+ * Input: In 1 first runs through the canceller for the block-rate lines (AcdcInput.h).
+ * The ADC data carry interference at 6, 12 and 18 kHz, the CPU load of this patch
+ * raises it by 3.8 dB (measurement log D69), and without the canceller it would reach the
+ * outputs with a factor of 1 (D68). The canceller learns the interference in silence and
+ * subtracts it.
  *
- * Pegel: 1.0 = Vollausschlag ≈ 10 V. Die Ausgänge sind bis 7,5 V linear, darüber biegt
- * ein weiches Knie ab, mehr als 9,8 V kommen nicht heraus.
+ * Level: 1.0 = full scale ≈ 10 V. The outputs are linear up to 7.5 V, above that a
+ * soft knee bends off, no more than 9.8 V comes out.
  *
- * LEDs (ohne USB-Aufnahme): LED 1–3 zeigen den Rastpunkt 1–7 von Regler 3 binär in Rot
- * (LED 1 = 1), zwischen zwei Rastpunkten sind sie aus. Ab Fassung 4 zählt nur der Regler,
- * nicht der CV, mit Hysterese (an ±12 % des Abstands an, ab ±18 % aus): Bei Tap-Modulation
- * schalteten die LEDs sonst im Blocktakt und gäben Knackser (D73). LED 4 leuchtet rot, solange die Begrenzung in der Schleife
- * arbeitet. Die LEDs sind nur ganz aus oder rot, nie gedimmt: Grün wird von der Firmware
- * per PWM gedimmt (2320,54 Hz bis fx6a, 48 kHz ab fx7a), Rot ist ein statischer Pin. Die
- * erste Fassung ließ die LEDs dauerhaft mit 60 % leuchten, und der Nutzer hörte ein
- * Fiepsen (messlog D66, Nachtrag). Jeder Wechsel einer LED verschiebt den Ausgang (D73).
+ * LEDs (without USB recording): LEDs 1–3 show detent 1–7 of knob 3 in binary, in red
+ * (LED 1 = 1); between two detents they are off. From version 4 on only the knob counts,
+ * not the CV, with hysteresis (on at ±12 % of the spacing, off from ±18 %): with tap
+ * modulation the LEDs would otherwise switch at block rate and cause clicks (D73). LED 4
+ * lights red while the limiter in the loop is working. The LEDs are only fully off or red,
+ * never dimmed: green is dimmed by the firmware via PWM (2320.54 Hz up to fx6a, 48 kHz
+ * from fx7a), red is a static pin. The first version kept the LEDs lit at 60 % all the
+ * time, and the user heard a whine (measurement log D66, addendum). Every change of an
+ * LED shifts the output (D73).
  *
- * Nicht nachgebildet: zweite Sektion und Reihenschaltung beider, Attenuverter,
- * Resonance-CV, einstellbare Abgriffe.
+ * Not reproduced: second section and series connection of both, attenuverters,
+ * Resonance CV, adjustable taps.
  *
- * basicmaths.h ersetzt expf() durch Tabellen-Näherungen. (expf)(x) in Klammern ruft die
- * genaue libm-Funktion.
+ * basicmaths.h replaces expf() with table approximations. (expf)(x) in parentheses calls
+ * the exact libm function.
  */
 
 #include "Patch.h"
@@ -113,41 +116,41 @@
 #include <stdint.h>
 
 #ifndef SCHLIERE_STAGES
-#define SCHLIERE_STAGES 61 // Länge der Kette in Stufen, mindestens 61 (letzter Abgriff von R)
+#define SCHLIERE_STAGES 61 // length of the chain in stages, at least 61 (last tap of R)
 #endif
 
-/* Gemeinsamer Teil beider Patches: Regler, Koeffizienten, Eingang, Feedback, Ausgänge, LEDs */
+/* Part shared by both patches: knobs, coefficients, input, feedback, outputs, LEDs */
 class SchliereBase : public Patch {
 protected:
   static constexpr size_t STAGES = SCHLIERE_STAGES;
   static constexpr size_t TAPS = 7;
-  static constexpr float KNOB_DEAD = 0.03f;      // der Linksanschlag liest ≈ 0,016–0,023 (D51)
-  static constexpr float CV_DEAD_LO = 0.045f;    // bis 0,45 V tot
-  static constexpr float CV_DEAD_HI = 0.065f;    // ab 0,65 V linear
-  static constexpr float CV_SCALE = 2.0f;        // 5 V ≙ voller Regelweg
-  static constexpr float OCT_PER_FS = 10.0f;     // In 2: 1.0 ≙ 10 V ≙ 10 Oktaven
-  static constexpr float F_CENTER = 632.4555f;   // Regler 1 auf 12 Uhr: √(20 · 20000) Hz
-  static constexpr float F_LN_RANGE = 7.6009025f; // ln(2000): eine halbe Oktave Reserve je Seite
+  static constexpr float KNOB_DEAD = 0.03f;      // the left end stop reads ≈ 0.016–0.023 (D51)
+  static constexpr float CV_DEAD_LO = 0.045f;    // dead up to 0.45 V
+  static constexpr float CV_DEAD_HI = 0.065f;    // linear from 0.65 V
+  static constexpr float CV_SCALE = 2.0f;        // 5 V ≙ full travel
+  static constexpr float OCT_PER_FS = 10.0f;     // In 2: 1.0 ≙ 10 V ≙ 10 octaves
+  static constexpr float F_CENTER = 632.4555f;   // knob 1 at 12 o'clock: √(20 · 20000) Hz
+  static constexpr float F_LN_RANGE = 7.6009025f; // ln(2000): half an octave of headroom per side
   static constexpr float F_MIN = 20.0f;
   static constexpr float F_MAX = 20000.0f;
   static constexpr float LN2 = 0.69314718f;
-  static constexpr float FB_MAX = 0.97f;         // Grenze der Feedback-Menge (nur mit CV erreichbar)
-  static constexpr float FB_KNEE = 0.9f;         // bis hier linear, darüber weiches Knie
-  static constexpr float HOLD = 0.15f;           // Haltezone je Seite, Anteil am Abstand zweier Rastpunkte
-  static constexpr float SMOOTH_S = 0.010f;      // Regler-Glättung, τ = 10 ms
-  static constexpr float MOD_HZ = 3000.0f;       // Glättung der Tap-Modulation, je Pol (2 Pole)
-  static constexpr float FB_MOD_HZ = 1500.0f;    // Glättung der Feedback-Menge, je Pol (2 Pole)
-  static constexpr float FB_MOD_HZ_WILD = 12000.0f; // dasselbe für SchliereWPatch
+  static constexpr float FB_MAX = 0.97f;         // limit of the feedback amount (reachable only with CV)
+  static constexpr float FB_KNEE = 0.9f;         // linear up to here, soft knee above
+  static constexpr float HOLD = 0.15f;           // hold zone per side, fraction of the spacing of two detents
+  static constexpr float SMOOTH_S = 0.010f;      // knob smoothing, τ = 10 ms
+  static constexpr float MOD_HZ = 3000.0f;       // smoothing of the tap modulation, per pole (2 poles)
+  static constexpr float FB_MOD_HZ = 1500.0f;    // smoothing of the feedback amount, per pole (2 poles)
+  static constexpr float FB_MOD_HZ_WILD = 12000.0f; // the same for SchliereWPatch
   static constexpr float LOOP_HP_HZ = 10.0f;
-  static constexpr float LOOP_KNEE = 0.5f;       // Schleife: linear bis 5 V
+  static constexpr float LOOP_KNEE = 0.5f;       // loop: linear up to 5 V
   static constexpr float LOOP_CEILING = 1.0f;
-  static constexpr float OUT_KNEE = 0.75f;       // Ausgänge: linear bis 7,5 V
+  static constexpr float OUT_KNEE = 0.75f;       // outputs: linear up to 7.5 V
   static constexpr float OUT_CEILING = 0.98f;
-  static constexpr float LED_RED = 1.0f;         // ab 4090 von 4095 schaltet die Firmware auf Rot
+  static constexpr float LED_RED = 1.0f;         // from 4090 of 4095 the firmware switches to red
   static constexpr float RED_HOLD_S = 0.3f;
-  static constexpr float LED_HYST = 0.03f;       // Hysterese der Rastpunkt-Anzeige, Anteil am Abstand
+  static constexpr float LED_HYST = 0.03f;       // hysteresis of the detent display, fraction of the spacing
 
-  /* linear bis knee, darüber tanh-Knie mit Asymptote ceiling */
+  /* linear up to knee, above that a tanh knee with asymptote ceiling */
   static float soft(float x, float knee, float ceiling){
     const float a = fabsf(x);
     if(a <= knee)
@@ -156,8 +159,8 @@ protected:
     const float y = knee + range * (tanhf)((a - knee) / range);
     return x < 0.0f ? -y : y;
   }
-  /* Totzone mit weicher Kante: 0 bis LO, dazwischen y³ − y⁴/2 (Steigung und Krümmung
-   * stetig), ab HI linear. Versatz danach (LO + HI) / 2. */
+  /* Dead zone with a soft edge: 0 up to LO, in between y³ − y⁴/2 (slope and curvature
+   * continuous), linear from HI. Offset after that (LO + HI) / 2. */
   static float deadzone(float cv){
     const float a = fabsf(cv);
     if(a <= CV_DEAD_LO)
@@ -174,29 +177,29 @@ protected:
   static float clamp(float x, float lo, float hi){
     return x < lo ? lo : (x > hi ? hi : x);
   }
-  /* Inf oder NaN. Über die Bits geprüft: Mit -ffast-math darf der Compiler Vergleiche
-   * mit NaN wegoptimieren. */
+  /* Inf or NaN. Checked via the bits: with -ffast-math the compiler may optimise away
+   * comparisons with NaN. */
   static bool broken(float x){
     union { float f; uint32_t u; } v = { x };
     return (v.u & 0x7f800000u) == 0x7f800000u;
   }
-  /* Resonance-Regler → ln(Q): Gerade zwischen den Stützpunkten 0,01 / 0,026 / 0,51 /
-   * 3,81 / 16 bei 0, 25, 50, 75, 100 % */
+  /* Resonance knob → ln(Q): straight lines between the points 0.01 / 0.026 / 0.51 /
+   * 3.81 / 16 at 0, 25, 50, 75, 100 % */
   static float lnQ(float p){
     static const float table[5] = { -4.6051702f, -3.6496587f, -0.6733446f, 1.3376292f, 2.7725887f };
     const float u = clamp(p, 0.0f, 1.0f) * 4.0f;
     const int i = u >= 4.0f ? 3 : (int)u;
     return table[i] + (table[i + 1] - table[i]) * (u - i);
   }
-  /* Tiefpass 1. Ordnung, trapezförmig: Nullstelle bei fs/2. Ein einfacher Tiefpass
-   * (y += (x − y)·a) dämpft dort nur 14 dB je Pol, zu wenig gegen Faltung. */
+  /* First-order lowpass, trapezoidal: zero at fs/2. A simple lowpass
+   * (y += (x − y)·a) attenuates only 14 dB per pole there, too little against folding. */
   static inline float lowpass(float x, float& s, float G){
     const float v = (x - s) * G;
     const float y = v + s;
     s = y + v;
     return y;
   }
-  /* eine Stufe: Zustandsvariablenfilter (trapezförmig), Allpass = x − c · Bandpass */
+  /* one stage: state-variable filter (trapezoidal), allpass = x − c · bandpass */
   static inline float stage(float x, float* s, float a1, float a2, float g, float c){
     const float v3 = x - s[1];
     const float v1 = a1 * s[0] + a2 * v3;
@@ -209,23 +212,23 @@ protected:
     return clamp((getParameterValue(id) - KNOB_DEAD) / (1.0f - 2.0f * KNOB_DEAD), 0.0f, 1.0f);
   }
 
-  float g = 0.0f, k = 2.0f;     // Koeffizienten, pro Sample weitergeführt
+  float g = 0.0f, k = 2.0f;     // coefficients, advanced per sample
   float a1 = 0.0f, a2 = 0.0f, c = 0.0f;
   float gStep = 0.0f, kStep = 0.0f;
-  float freqKnob = 0.5f, resKnob = 0.5f, tapKnob = 0.0f, fbKnob = 0.0f; // geglättet
+  float freqKnob = 0.5f, resKnob = 0.5f, tapKnob = 0.0f, fbKnob = 0.0f; // smoothed
   float targetTap = 0.0f, targetFb = 0.0f;
-  AcdcBlockRateCanceller inputClean; // Sperre für die Blockraten-Linien auf In 1
-  float loopLp = 0.0f;          // Tiefpass für den Hochpass in der Schleife
-  float loopState = 0.0f;       // begrenztes Feedback-Signal des letzten Samples
+  AcdcBlockRateCanceller inputClean; // canceller for the block-rate lines on In 1
+  float loopLp = 0.0f;          // lowpass for the highpass in the loop
+  float loopState = 0.0f;       // limited feedback signal of the last sample
   float loopPeak = 0.0f, fbNow = 0.0f;
-  float fb1 = 0.0f, fb2 = 0.0f; // Zustand der beiden Tiefpässe für die Feedback-Menge
+  float fb1 = 0.0f, fb2 = 0.0f; // state of the two lowpasses for the feedback amount
   float sampleRate;
   float loopHp;
-  float modG, fbG;              // Beiwerte der Tiefpässe für Tap und Feedback-Menge
+  float modG, fbG;              // coefficients of the lowpasses for tap and feedback amount
   float slewBlock = 0.0f, slewSample;
   size_t slewSize = 0;
   size_t redBlocks = 0;
-  int ledPoint = 0;             // angezeigter Rastpunkt 1–7, 0 = keiner
+  int ledPoint = 0;             // displayed detent 1–7, 0 = none
   size_t channels;
   bool primed = false;
 
@@ -252,9 +255,10 @@ protected:
     registerParameter(PARAMETER_D, "Feedback");
   }
 
-  /* Blockanfang: Regler lesen, Frequency und Resonance für das Blockende berechnen und
-   * über den Block linear führen. Liest In 2 ganz, bevor die Ausgänge geschrieben werden.
-   * Gibt true zurück im ersten Block (Glättungen ohne Einschwingen übernehmen). */
+  /* Block start: read the knobs, compute Frequency and Resonance for the end of the block
+   * and ramp them linearly across the block. Reads all of In 2 before the outputs are
+   * written. Returns true in the first block (take over the smoothed values without
+   * settling). */
   bool beginBlock(FloatArray* io, size_t size){
     if(size != slewSize){
       slewSize = size;
@@ -291,11 +295,11 @@ protected:
     a2 = g * a1;
     c = 2.0f * k;
   }
-  /* Eingang der Kette: Sperre, dann Feedback (In 4 und Regler 4). Die Feedback-Menge
-   * multipliziert das Signal der Schleife. Mit Audio an In 4 (etwa ein Ausgang des Patches
-   * selbst) wäre das eine Ringmodulation pro Sample: Eine harte Grenze schneidet den CV ab,
-   * und Summenfrequenzen über fs/2 falten zurück. Deshalb weiches Knie statt Grenze und
-   * danach zwei Tiefpässe wie für den Tap, hier mit je 1,5 kHz (zusammen ≈ 1 kHz). */
+  /* Input of the chain: canceller, then feedback (In 4 and knob 4). The feedback amount
+   * multiplies the loop signal. With audio at In 4 (e.g. an output of the patch itself)
+   * that would be a per-sample ring modulation: a hard limit clips the CV, and sum
+   * frequencies above fs/2 fold back. Hence a soft knee instead of a limit, followed by
+   * two lowpasses as for the tap, here at 1.5 kHz each (≈ 1 kHz combined). */
   float chainInput(float in1, float cv4){
     fbKnob += (targetFb - fbKnob) * slewSample;
     const float target = FB_MAX * soft(fbKnob + CV_SCALE * deadzone(cv4), FB_KNEE, 1.0f);
@@ -303,12 +307,12 @@ protected:
     fbNow = fb;
     return (sqrtf)(1.0f - fb * fb) * inputClean.process(in1) + fb * loopState;
   }
-  /* Tap-Stellung 0 … TAPS − 1 aus Regler 3 (geglättet) und In 3 */
+  /* tap position 0 … TAPS − 1 from knob 3 (smoothed) and In 3 */
   float tapPosition(float cv3){
     tapKnob += (targetTap - tapKnob) * slewSample;
     return clamp(tapKnob + CV_SCALE * deadzone(cv3), 0.0f, 1.0f) * (TAPS - 1);
   }
-  /* Schleife (Hochpass, weich begrenzen) und die vier Ausgänge */
+  /* loop (highpass, soft limiting) and the four outputs */
   void outputs(FloatArray* io, size_t i, float left, float right, float out3, float out4){
     loopLp += (left - loopLp) * loopHp;
     const float loop = left - loopLp;
@@ -319,8 +323,8 @@ protected:
     io[2][i] = soft(out3, OUT_KNEE, OUT_CEILING);
     io[3][i] = soft(out4, OUT_KNEE, OUT_CEILING);
   }
-  /* Unsinn im Zustand (sollte nie vorkommen): Schleife und Ausgänge auf null. Die Kette
-   * setzt der Patch selbst zurück. */
+  /* Garbage in the state (should never happen): loop and outputs to zero. The patch
+   * resets the chain itself. */
   bool resetIfBroken(FloatArray* io, size_t size, float probe){
     if(!broken(probe) && !broken(loopState) && !broken(loopLp))
       return false;
@@ -329,10 +333,10 @@ protected:
       for(size_t i = 0; i < size; ++i) io[ch][i] = 0.0f;
     return true;
   }
-  /* LEDs: Rastpunkt 1–7 binär, LED 4 = Begrenzung in der Schleife. Der Rastpunkt kommt nur
-   * aus Regler 3, nicht aus dem CV, und hat eine Hysterese: Folgten die LEDs dem CV,
-   * schalteten sie bei Modulation im Blocktakt, und jeder Wechsel einer LED gibt einen
-   * Knack am Ausgang (D73). */
+  /* LEDs: detent 1–7 in binary, LED 4 = limiter in the loop. The detent comes only
+   * from knob 3, not from the CV, and has hysteresis: if the LEDs followed the CV,
+   * they would switch at block rate under modulation, and every change of an LED gives a
+   * click at the output (D73). */
   void leds(size_t size){
     const float u = tapKnob * (TAPS - 1);
     if(ledPoint == 0 || fabsf(u - (float)(ledPoint - 1)) > HOLD + LED_HYST){
@@ -342,27 +346,27 @@ protected:
     for(int bit = 0; bit < 3; ++bit)
       setParameterValue(PatchParameterId(PARAMETER_AA + bit), (ledPoint >> bit) & 1 ? LED_RED : 0.0f);
     if(loopPeak > LOOP_KNEE && fabsf(fbNow) > 1e-4f)
-      redBlocks = (size_t)(RED_HOLD_S * sampleRate / size); // Rot hält nach, sonst flackert es nur
+      redBlocks = (size_t)(RED_HOLD_S * sampleRate / size); // red is held, otherwise it would only flicker
     else if(redBlocks > 0)
       redBlocks--;
     setParameterValue(PARAMETER_AD, redBlocks > 0 ? LED_RED : 0.0f);
   }
 };
 
-/* Überblendung zwischen sieben festen Abgriffen (wie das Vorbild) */
+/* Crossfade between seven fixed taps (like the model) */
 class SchlierePatch : public SchliereBase {
-  float state[2 * STAGES] = {}; // je Stufe die beiden Integratoren
-  float node[STAGES + 1] = {};  // Signal nach k Stufen, node[0] = Eingang der Kette
-  float w1[TAPS] = {}, w2[TAPS] = {}; // Zustand der beiden Tiefpässe je Gewicht
+  float state[2 * STAGES] = {}; // the two integrators of each stage
+  float node[STAGES + 1] = {};  // signal after k stages, node[0] = input of the chain
+  float w1[TAPS] = {}, w2[TAPS] = {}; // state of the two lowpasses per weight
 
 public:
   SchlierePatch(){
-    static_assert(STAGES >= 61, "SCHLIERE_STAGES muss mindestens 61 sein");
+    static_assert(STAGES >= 61, "SCHLIERE_STAGES must be at least 61");
   }
 
   void processAudio(AudioBuffer& buffer){
     if(channels < 4)
-      return; // nur für das AC/DC gedacht
+      return; // intended for the AC/DC only
     static const uint8_t tapsL[TAPS] = { 1, 9, 17, 25, 33, 41, 49 };
     static const uint8_t tapsR[TAPS] = { 1, 11, 21, 31, 41, 51, 61 };
     const size_t size = buffer.getSize();
@@ -374,7 +378,7 @@ public:
       stepCoefficients();
       float x = chainInput(io[0][i], io[3][i]);
 
-      // die Kette
+      // the chain
       node[0] = x;
       float* s = state;
       for(size_t n = 1; n <= STAGES; ++n, s += 2){
@@ -382,14 +386,14 @@ public:
         node[n] = x;
       }
 
-      // Abgriffe: Haltezone, dazwischen S-Kurve
+      // taps: hold zone, S-curve in between
       const float u = tapPosition(io[2][i]);
       const int index = u >= (float)(TAPS - 1) ? (int)TAPS - 2 : (int)u;
       float t = clamp((u - index - HOLD) / (1.0f - 2.0f * HOLD), 0.0f, 1.0f);
       t = t * t * (3.0f - 2.0f * t);
 
-      // Gewichte je Abgriff, über zwei Tiefpässe geführt: Die Überblendung ist damit
-      // bandbegrenzt, auch beim Wechsel über einen Rastpunkt hinweg
+      // weights per tap, passed through two lowpasses: this makes the crossfade
+      // band-limited, also when moving across a detent
       float left = 0.0f, right = 0.0f;
       for(int j = 0; j < (int)TAPS; ++j){
         const float target = j == index ? 1.0f - t : (j == index + 1 ? t : 0.0f);
@@ -413,9 +417,9 @@ public:
 };
 
 #ifdef SCHLIERE_WILD_PATCH
-/* Wie SchlierePatch, Feedback-Modulation mit mehr Bandbreite (wild). Nur über
- * SchliereWPatch.hpp: Schon eine abgeleitete Klasse ändert das Binary von SchlierePatch,
- * und das soll bytegleich mit dem Build auf dem Modul bleiben (SchliereZ). */
+/* Like SchlierePatch, feedback modulation with more bandwidth (wild). Only via
+ * SchliereWPatch.hpp: even a derived class changes the binary of SchlierePatch,
+ * and that should stay byte-identical with the build on the module (SchliereZ). */
 class SchliereWPatch : public SchlierePatch {
 public:
   SchliereWPatch(){

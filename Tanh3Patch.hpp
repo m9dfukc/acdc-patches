@@ -1,71 +1,71 @@
 #ifndef __TANH3_PATCH_HPP__
 #define __TANH3_PATCH_HPP__
 
-/* Tanh3: dreifacher tanh-Waveshaper für das AC/DC, nach dem Vorbild eines analogen
- * Eurorack-Moduls mit drei tanh-Kanälen (Waveshaper, Limiter, Overdrive,
- * Feedback-Zähmer), dazu ein Mix-Kanal (Nutzer-Wunsch 2026-11-17).
+/* Tanh3: triple tanh waveshaper for the AC/DC, modelled on an analog Eurorack
+ * module with three tanh channels (waveshaper, limiter, overdrive, feedback
+ * tamer), plus a mix channel (user request 2026-11-17).
  *
- *   Kanal 1–3   Out n = SAT · tanh(Level n · In n / SAT)
- *               Regler n = Level (Eingangspegel vor dem tanh), 0,5-fach am Linksanschlag
- *               bis 16-fach am Rechtsanschlag, ≈ 2,8-fach bei 12 Uhr. Wie beim Vorbild
- *               wird der Kanal nie stumm.
- *   Kanal 4     Out 4 = SAT · tanh(Pegel · (Out 1 + Out 2 + Out 3) / SAT)
- *               Regler 4 = Pegel des Mix (0…1, linear)
- *               In 4 = CV auf den Pegel, addiert zum Regler: +5 V ≙ voller Regelweg,
- *               negative Spannung nimmt Pegel weg. Wirkt pro Sample (VCA bis Audio-Rate).
- *               Unter ±0,5 V ist die CV tot, damit der offene Eingang (Offset
- *               −0,2…−0,4 V, D36) den Pegel nicht verschiebt.
+ *   Channel 1–3 Out n = SAT · tanh(Level n · In n / SAT)
+ *               Knob n = Level (input level before the tanh), 0.5× at the left stop
+ *               up to 16× at the right stop, ≈ 2.8× at 12 o'clock. As on the model,
+ *               the channel never goes silent.
+ *   Channel 4   Out 4 = SAT · tanh(level · (Out 1 + Out 2 + Out 3) / SAT)
+ *               Knob 4 = level of the mix (0…1, linear)
+ *               In 4 = CV on the level, added to the knob: +5 V ≙ full knob travel,
+ *               a negative voltage takes level away. Acts per sample (VCA up to audio rate).
+ *               Below ±0.5 V the CV is dead, so that the open input (offset
+ *               −0.2…−0.4 V, D36) does not shift the level.
  *
- * Pegel: 1.0 = Vollausschlag ≈ 10 V. SAT = 0.5: Die Ausgänge sättigen bei ±5 V (10 Vpp).
- * Kleine Signale laufen bei Level 1 unverändert durch. Alles ist DC-gekoppelt, taugt
- * also auch für CV.
+ * Levels: 1.0 = full scale ≈ 10 V. SAT = 0.5: the outputs saturate at ±5 V (10 Vpp).
+ * Small signals pass unchanged at Level 1. Everything is DC coupled, so it is
+ * also suitable for CV.
  *
- * Nicht nachgebildet: die Normalisierung der Eingänge (oben → Mitte → unten). Das AC/DC
- * erkennt nicht, ob ein Kabel steckt.
+ * Not modelled: the normalling of the inputs (top → middle → bottom). The AC/DC
+ * cannot detect whether a cable is plugged in.
  *
- * Aliasing: tanh erzeugt bei hohem Level Obertöne über fs/2, die als unharmonische
- * Linien in den Hörbereich zurückfallen. Die erste Fassung rechnete mit Antiderivative
- * Antialiasing erster Ordnung (wie Nonlinearity.hpp von burstMembrane/acdc-patches).
- * Das reichte nicht: 3 kHz bei 6,7-fachem Level ergab −37 dB Fremdlinien unter 15 kHz,
- * hörbar als „digitale“ Störgeräusche (Nutzer, messlog D56). Jetzt läuft jeder Kanal
- * mit vierfachem Oversampling: FIR hoch auf 192 kHz (Polyphase), tanh, FIR herunter.
- * Derselbe Fall liegt damit bei −98 dB. Preis: ≈ 0,25 ms Laufzeit (11,75 Samples, für
- * alle Kanäle gleich) und mehr Rechenlast. Bei hart angefahrenen, hellen Signalen schwingt der
- * bandbegrenzte Ausgang bis ≈ 10 % über SAT hinaus.
+ * Aliasing: at high Level, tanh produces harmonics above fs/2 that fold back into the
+ * audible range as inharmonic lines. The first version used first-order antiderivative
+ * antialiasing (like Nonlinearity.hpp from burstMembrane/acdc-patches).
+ * That was not enough: 3 kHz at 6.7× Level gave −37 dB of spurious lines below 15 kHz,
+ * audible as "digital" noise (user, messlog D56). Now every channel runs
+ * with 4× oversampling: FIR up to 192 kHz (polyphase), tanh, FIR down.
+ * The same case is now at −98 dB. Cost: ≈ 0.25 ms latency (11.75 samples, the same for
+ * all channels) and more CPU load. With hard-driven, bright signals the
+ * band-limited output overshoots SAT by up to ≈ 10 %.
  *
- * LEDs (ohne USB-Aufnahme): Eingangs-LED n = Ausgangspegel des Kanals relativ zu SAT,
- * Rot = tief in der Sättigung (tanh-Argument über 2,5).
+ * LEDs (without USB recording): input LED n = output level of the channel relative to SAT,
+ * red = deep in saturation (tanh argument above 2.5).
  *
- * basicmaths.h ersetzt expf() durch Tabellen-Näherungen. (expf)(x) in Klammern ruft
- * die genaue libm-Funktion.
+ * basicmaths.h replaces expf() with table approximations. (expf)(x) in parentheses calls
+ * the exact libm function.
  */
 
 #include "Patch.h"
 #include <math.h>
 
 #ifndef TANH3_TAPS
-#define TANH3_TAPS 48 // Länge des FIR bei 192 kHz, Vielfaches von 4 (64 bringt kaum mehr, D56)
+#define TANH3_TAPS 48 // length of the FIR at 192 kHz, a multiple of 4 (64 brings hardly any gain, D56)
 #endif
 
 class Tanh3Patch : public Patch {
-  static constexpr float SAT = 0.5f;            // Sättigungspegel, 5 V
-  static constexpr float LEVEL_MIN = 0.5f;      // Level am Linksanschlag
-  static constexpr float LEVEL_LN_RANGE = 3.4657359f; // ln(32): 0,5 … 16
-  static constexpr float SLEW = 0.002f;         // Regler-Glättung pro Sample, τ ≈ 10 ms
-  static constexpr float KNOB_DEAD = 0.03f;     // der Linksanschlag liest ≈ 0,016–0,023 (D51)
-  static constexpr float CV_DEAD = 0.05f;       // 0,5 V
-  static constexpr float CV_SCALE = 2.0f;       // 5 V ≙ 1,0
-  static constexpr size_t OS = 4;               // Oversampling
+  static constexpr float SAT = 0.5f;            // saturation level, 5 V
+  static constexpr float LEVEL_MIN = 0.5f;      // Level at the left stop
+  static constexpr float LEVEL_LN_RANGE = 3.4657359f; // ln(32): 0.5 … 16
+  static constexpr float SLEW = 0.002f;         // knob smoothing per sample, τ ≈ 10 ms
+  static constexpr float KNOB_DEAD = 0.03f;     // the left stop reads ≈ 0.016–0.023 (D51)
+  static constexpr float CV_DEAD = 0.05f;       // 0.5 V
+  static constexpr float CV_SCALE = 2.0f;       // 5 V ≙ 1.0
+  static constexpr size_t OS = 4;               // oversampling
   static constexpr size_t TAPS = TANH3_TAPS;
-  static constexpr size_t UP_TAPS = TAPS / OS;  // Abgriffe je Polyphase
-  static constexpr float CUTOFF = 22000.0f / 192000.0f; // Grenzfrequenz relativ zur hohen Rate
+  static constexpr size_t UP_TAPS = TAPS / OS;  // taps per polyphase branch
+  static constexpr float CUTOFF = 22000.0f / 192000.0f; // cutoff frequency relative to the high rate
   static constexpr float KAISER_BETA = 9.0f;
   static constexpr float RED_DRIVE = 2.5f;
-  static constexpr float LED_DECAY = 0.995f;    // pro Block
+  static constexpr float LED_DECAY = 0.995f;    // per block
 
-  /* tanh als Kettenbruch (Lambert, 7. Ordnung). Bei |x| = 4,97 erreicht die Näherung genau 1,
-   * darüber gilt ±1: stetig, monoton, Fehler unter 1e-4 (unter 1e-6 bis |x| = 3).
-   * Läuft viermal pro Sample und Kanal, deshalb nicht tanhf(). */
+  /* tanh as a continued fraction (Lambert, 7th order). At |x| = 4.97 the approximation
+   * reaches exactly 1, above that ±1 applies: continuous, monotonic, error below 1e-4
+   * (below 1e-6 up to |x| = 3). Runs four times per sample and channel, hence not tanhf(). */
   static float fastTanh(float x){
     if(x > 4.97f) return 1.0f;
     if(x < -4.97f) return -1.0f;
@@ -75,9 +75,9 @@ class Tanh3Patch : public Patch {
     return num / den;
   }
 
-  /* Filterkoeffizienten, einmal im Konstruktor berechnet: Kaiser-gefensterter Tiefpass.
-   * up[p][k]: Polyphase p, je auf Summe 1 normiert (Gleichspannung bleibt exakt gleich).
-   * down[j]: derselbe Tiefpass, Summe 1. */
+  /* Filter coefficients, computed once in the constructor: Kaiser-windowed lowpass.
+   * up[p][k]: polyphase branch p, each normalized to sum 1 (DC stays exactly the same).
+   * down[j]: the same lowpass, sum 1. */
   float up[OS][UP_TAPS];
   float down[TAPS];
 
@@ -109,8 +109,8 @@ class Tanh3Patch : public Patch {
     }
   }
 
-  /* Ein Kanal: Eingangs- und Ausgangsgedächtnis als doppelt beschriebene Ringe, damit die
-   * Skalarprodukte über einen zusammenhängenden Bereich laufen. x in Einheiten von SAT. */
+  /* One channel: input and output history as rings written twice, so that the dot
+   * products run over a contiguous range. x in units of SAT. */
   struct Shaper {
     float in[2 * UP_TAPS] = {};
     float hi[2 * TAPS] = {};
@@ -118,7 +118,7 @@ class Tanh3Patch : public Patch {
     size_t hiPos = 0;
     float process(float x, const float (*up)[UP_TAPS], const float* down){
       inPos = inPos == 0 ? UP_TAPS - 1 : inPos - 1;
-      in[inPos] = in[inPos + UP_TAPS] = x; // in[inPos + k] = x vor k Samples
+      in[inPos] = in[inPos + UP_TAPS] = x; // in[inPos + k] = x from k samples ago
       const float* xi = in + inPos;
       for(size_t p = 0; p < OS; ++p){
         float acc = 0.0f;
@@ -153,7 +153,7 @@ public:
 
   void processAudio(AudioBuffer& buffer){
     if(channels < 4)
-      return; // nur für das AC/DC gedacht
+      return; // intended only for the AC/DC
     const size_t size = buffer.getSize();
     FloatArray io[4] = { buffer.getSamples(0), buffer.getSamples(1),
                          buffer.getSamples(2), buffer.getSamples(3) };

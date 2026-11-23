@@ -4,8 +4,6 @@
 
 OWL patches for the **Befaco / Rebel Technology AC/DC** (Eurorack USB audio interface, OpenWare firmware), written in C++ against the OwlProgram SDK. They grew out of [acdc-workbench](https://github.com/m9dfukc/acdc-workbench), where they are included as a submodule at `owl/`. The measurements behind them (D numbers in the comments) are in that repository's lab notebook, `docs/messlog.md`.
 
-The source comments are German.
-
 ## Patches
 
 | File | What it does |

@@ -1,48 +1,48 @@
 #ifndef __SCHLIERE_LED_PATH_PATCH_HPP__
 #define __SCHLIERE_LED_PATH_PATCH_HPP__
 
-/* Mess-Patch, kein Musik-Patch: Wo entsteht die Verschiebung, die der LED-Strom am
- * Ausgang hinterlässt (messlog D73)? Am Eingang (ADC), von wo ein Patch sie durchreicht,
- * oder erst am Ausgang (DAC, Ausgangsstufe)?
+/* Measurement patch, not a music patch: where does the shift that the LED current leaves
+ * at the output (messlog D73) arise? At the input (ADC), from where a patch passes it on,
+ * or only at the output (DAC, output stage)?
  *
- * Ablauf, je PHASE_S Sekunden, beginnt beim Laden des Patches und wiederholt sich:
- *   0  Schliere wie auf Slot 6, LEDs aus      Bezug
- *   1  Schliere, LED 1–3 blinken mit 40 Hz    wie D73
- *   2  Ausgänge digital null, LEDs aus        Bezug
- *   3  Ausgänge null, LED 1–3 blinken         bleibt das Blinken, entsteht es am Ausgang
- *   4  Ausgänge null, LEDs aus
- *   5  Ausgänge null, LED 1–4 rot             Sprung beim Ein- und Ausschalten
- *   6  Ausgänge null, LEDs aus
- *   7  Ausgänge null, an Out 1 ein Eichton    CAL_HZ mit Amplitude CAL_LEVEL, LEDs aus
- *   8  alle Ausgänge = GAIN × In 1, LEDs aus  Bezug
- *   9  GAIN × In 1, LED 1–3 blinken           wächst das Blinken mit GAIN, entsteht es am Eingang
+ * Sequence, PHASE_S seconds each, starts when the patch is loaded and repeats:
+ *   0  Schliere as on slot 6, LEDs off          Reference
+ *   1  Schliere, LED 1–3 blink at 40 Hz         As in D73
+ *   2  Outputs digitally zero, LEDs off         Reference
+ *   3  Outputs zero, LED 1–3 blink              If the blinking remains, it arises at the output
+ *   4  Outputs zero, LEDs off
+ *   5  Outputs zero, LED 1–4 red                Step when switching on and off
+ *   6  Outputs zero, LEDs off
+ *   7  Outputs zero, calibration tone at Out 1  CAL_HZ with amplitude CAL_LEVEL, LEDs off
+ *   8  All outputs = GAIN × In 1, LEDs off      Reference
+ *   9  GAIN × In 1, LED 1–3 blink               If the blinking grows with GAIN, it arises at the input
  *
- * Dazu misst der Patch selbst am Eingang, in Einheiten von 1e-7 Vollausschlag (1 ≙ 1 µV
- * bei ±10 V), und meldet es als Debug-Meldung (tools/owl_read.py zeigt die letzte):
- *   „LEDblink In1-3“  nach Phase 3: Mittel der rohen Eingänge 1–3 bei LED an minus LED aus,
- *                     ohne die ersten 4 ms nach jedem Wechsel, über alle Durchläufe
- *   „LEDstat In1-3“   nach Phase 6: Mittel in Phase 5 minus Mittel der Phasen 4 und 6,
- *                     je ohne die erste Sekunde, letzter Durchlauf
- * In den Phasen 2–7 liegt am Ausgang kein Signal, das auf die Eingänge übersprechen könnte.
+ * In addition, the patch itself measures at the input, in units of 1e-7 full scale (1 ≙ 1 µV
+ * at ±10 V), and reports it as a debug message (tools/owl_read.py shows the last one):
+ *   "LEDblink In1-3"  after phase 3: mean of the raw inputs 1–3 with LED on minus LED off,
+ *                     excluding the first 4 ms after each change, over all cycles
+ *   "LEDstat In1-3"   after phase 6: mean in phase 5 minus mean of phases 4 and 6,
+ *                     each excluding the first second, last cycle
+ * In phases 2–7 the outputs carry no signal that could cross-talk onto the inputs.
  *
- * „Rot“ heißt in der Firmware Rot plus Grün mit Tastgrad 1023/1024 (messlog D72). Bauen:
+ * "Red" in the firmware means red plus green with duty cycle 1023/1024 (messlog D72). Build:
  *   SRC=owl tools/build_owl_patch.sh SchliereLedPath SchliereLedPathPatch test/SchliereLedPathPatch.hpp
  */
 
 #include "../schliere/SchlierePatch.hpp"
 
-void debugMessage(const char* msg, int, int, int); // message.h des SDK, im Host-Test ein Ersatz
+void debugMessage(const char* msg, int, int, int); // message.h of the SDK, a stand-in in the host test
 
 class SchliereLedPathPatch : public SchlierePatch {
 public:
   static constexpr float PHASE_S = 5.0f;
   static constexpr size_t PHASES = 10;
-  static constexpr size_t FLICKER_BLOCKS = 75; // Blöcke je Halbperiode: 12,5 ms an, 12,5 ms aus
-  static constexpr size_t SKIP_BLOCKS = 24;    // 4 ms nach jedem Wechsel nicht messen
-  static constexpr float SETTLE_S = 1.0f;      // statische Messung: erste Sekunde jeder Phase auslassen
+  static constexpr size_t FLICKER_BLOCKS = 75; // blocks per half period: 12.5 ms on, 12.5 ms off
+  static constexpr size_t SKIP_BLOCKS = 24;    // do not measure for 4 ms after each change
+  static constexpr float SETTLE_S = 1.0f;      // static measurement: skip the first second of each phase
   static constexpr float GAIN = 4.0f;
   static constexpr float CAL_HZ = 300.0f;
-  static constexpr float CAL_LEVEL = 0.001f;   // −60 dBFS ≙ 10 mV Spitze an Out 1
+  static constexpr float CAL_LEVEL = 0.001f;   // −60 dBFS ≙ 10 mV peak at Out 1
   static constexpr float RED = 1.0f;
   static constexpr size_t MAX_BLOCK = 64;
 
@@ -56,7 +56,7 @@ public:
     FloatArray io[4] = { buffer.getSamples(0), buffer.getSamples(1),
                          buffer.getSamples(2), buffer.getSamples(3) };
 
-    // Messung am Eingang, vor allem anderen: Die Ausgänge überschreiben die Puffer
+    // Measurement at the input, before anything else: the outputs overwrite the buffers
     float sum[3] = { 0.0f, 0.0f, 0.0f };
     for(size_t ch = 0; ch < 3; ++ch)
       for(size_t i = 0; i < size; ++i)
@@ -114,7 +114,7 @@ public:
   }
 
 private:
-  static int unit(double x){ // in 1e-7 Vollausschlag, gerundet
+  static int unit(double x){ // in 1e-7 full scale, rounded
     const double v = x * 1e7;
     return (int)(v < 0.0 ? v - 0.5 : v + 0.5);
   }
