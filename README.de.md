@@ -8,11 +8,11 @@ OWL-Patches für das **Befaco / Rebel Technology AC/DC** (Eurorack-USB-Audiointe
 
 | Datei | Was er tut |
 |---|---|
-| `tanh3/` | **Tanh3**: dreifacher tanh-Waveshaper (Ausgänge sättigen bei ±5 V) mit Mix-Kanal auf Out 4, Pegel über Regler 4 plus CV an In 4. 4× Oversampling je Kanal. Siehe [tanh3/README.md](tanh3/README.md) |
-| `schliere/` | **Schliere**: Kette aus Allpässen 2. Ordnung (61 Stufen, in Variante L 160). Laufzeit je Frequenz, Phaser-Kerben, Resonator mit Feedback. Mono hinein, stereo heraus. Sieben Varianten, siehe [schliere/README.md](schliere/README.md) |
-| `plateau/` | **Plateau**: Port von Valleys Plateau (Plattenhall nach Dattorro 1997, ValleyRackFree 2.4.5) in float, auf vier Makro-Reglern (Mix, Space, Decay als RT60 mit Freeze, Character). Morph-CV an In 3, Freeze/Clear-Gate an In 4, Wet mono und eine Energie-CV an Out 3/4. Läuft am Gerät, 27 % CPU (Firmware mit eingeschalteten Caches, Build-Flags siehe unten), noch nicht gehört. Siehe [plateau/README.md](plateau/README.md) |
-| `AcdcOutput.h` | `AcdcLimited<Patch>`: Stereo-gekoppelter Spitzen-Limiter mit weichem Knie auf Out 1/2, als Hülle um eine vorhandene Patch-Klasse |
-| `AcdcInput.h` | Sperre für die Blockraten-Linien der AC/DC-Eingänge (6/12/18 kHz, Periode 8 Samples). Lernt das Muster in der Stille |
+| `patches/tanh3/` | **Tanh3**: dreifacher tanh-Waveshaper (Ausgänge sättigen bei ±5 V) mit Mix-Kanal auf Out 4, Pegel über Regler 4 plus CV an In 4. 4× Oversampling je Kanal. Siehe [patches/tanh3/README.md](patches/tanh3/README.md) |
+| `patches/schliere/` | **Schliere**: Kette aus Allpässen 2. Ordnung (61 Stufen, in Variante L 160). Laufzeit je Frequenz, Phaser-Kerben, Resonator mit Feedback. Mono hinein, stereo heraus. Sieben Varianten, siehe [patches/schliere/README.md](patches/schliere/README.md) |
+| `patches/plateau/` | **Plateau**: Port von Valleys Plateau (Plattenhall nach Dattorro 1997, ValleyRackFree 2.4.5) in float, auf vier Makro-Reglern (Mix, Space, Decay als RT60 mit Freeze, Character). Morph-CV an In 3, Freeze/Clear-Gate an In 4, Wet mono und eine Energie-CV an Out 3/4. Läuft am Gerät, 27 % CPU (Firmware mit eingeschalteten Caches, Build-Flags siehe unten), noch nicht gehört. Siehe [patches/plateau/README.md](patches/plateau/README.md) |
+| `include/AcdcOutput.h` | `AcdcLimited<Patch>`: Stereo-gekoppelter Spitzen-Limiter mit weichem Knie auf Out 1/2, als Hülle um eine vorhandene Patch-Klasse |
+| `include/AcdcInput.h` | Sperre für die Blockraten-Linien der AC/DC-Eingänge (6/12/18 kHz, Periode 8 Samples). Lernt das Muster in der Stille |
 | `test/SchliereLedTestPatch.hpp` | Mess-Patch: schaltet die LEDs nach festem Zeitplan, um zu messen, was LED-Wechsel an den Ausgängen anrichten |
 | `test/PlateauProfilePatch.hpp` | Mess-Patch: Plateau mit Taktzählern je Abschnitt, Zugriffszeiten der Speicher und den Cache-Bits der MCU, meldet sie als Program Message |
 | `test/SchliereLedPathPatch.hpp` | Mess-Patch: schaltet die LEDs und misst die Verschiebung an den rohen Eingängen selbst, meldet sie als Program Message |
@@ -48,9 +48,9 @@ FirmwareSender -in Tanh3.bin -out "OWL-*" -store 6    # in Slot 6 speichern
 Gebaut wird mit [OwlProgram](https://github.com/RebelTechnology/OwlProgram) und der Arm-GNU-Toolchain. Dabei die Compiler-Flags von OwlProgram-`develop` verwenden ([PR #132](https://github.com/RebelTechnology/OwlProgram/pull/132)): Ohne `-fno-builtin`, `-ffreestanding` und `-mtune=cortex-m4` werden `fabsf`, `sqrtf` und Co. zu einzelnen FPU-Befehlen statt zu Bibliotheksaufrufen. Am AC/DC spart das 5–21 % CPU bei gleichem Ausgang (acdc-workbench, Messlog D92 und D93). In der acdc-workbench baut `tools/build_owl_patch.sh` einen Patch zur SysEx-Datei, `tools/owl_write.py` lädt ihn hoch, zum Beispiel:
 
 ```bash
-SRC=owl/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
-SRC=owl/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
-LINK=plusram SRC=owl/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
+SRC=owl/patches/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
+LINK=plusram SRC=owl/patches/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
 ```
 
 ## Lizenz

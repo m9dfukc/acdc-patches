@@ -1,8 +1,8 @@
-// Host test of the Plateau patch (plateau/PlateauPatch.hpp): memory, silence, decay as RT60
+// Host test of the Plateau patch (patches/plateau/PlateauPatch.hpp): memory, silence, decay as RT60
 // independent of Space, freeze, gate at in 4 (pulse = clear, held = freeze, negative = clear),
 // flush gesture, mix, normalling of in 2, morph at in 3, size sweeps, block sizes, LEDs.
 #include "Patch.h"
-#include "../plateau/PlateauPatch.hpp"
+#include "../patches/plateau/PlateauPatch.hpp"
 #include <cmath>
 #include <cstdio>
 #include <cstring>

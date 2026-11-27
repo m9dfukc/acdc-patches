@@ -24,7 +24,7 @@ in a slot.
 | Knob 2 | **Space** | size 0.01 … 4 (Plateau's curve, size = 0.01 + 3.99·p²) and pre-delay 0 … 150 ms (·p²) together. Smoothed (80 ms) against Doppler steps |
 | Knob 3 | **Decay** | RT60 0.3 … 30 s, independent of Space. Above 96 %: freeze, back below 93 % |
 | Knob 4 | **Character** | 0–30 % echo → plate (tank diffusion up, input diffusion fades in at 5–15 %). 30–55 % plate (modulation depth 0.5 → 3, speed ×1 → ×2). 55–100 % dark/ambient (high cut 14 kHz → 1.8 kHz, low cut 14 → 120 Hz, depth 3 → 10, speed ×2 → ×6, shape 0.5 → 0.7) |
-| In 1 / In 2 | **Audio L / R** | When in 2 stays below −66 dBFS for 300 ms while in 1 carries signal, R := L (back above −54 dBFS). The AC/DC has no jack detect. Both inputs go through the block-rate canceller (`../AcdcInput.h`) |
+| In 1 / In 2 | **Audio L / R** | When in 2 stays below −66 dBFS for 300 ms while in 1 carries signal, R := L (back above −54 dBFS). The AC/DC has no jack detect. Both inputs go through the block-rate canceller (`../../include/AcdcInput.h`) |
 | In 3 | **Morph** | ±5 V. +5 V → snapshot "Abyss" (Space 1.0, Decay 0.92, Character 0.9), −5 V → "Tight" (0.15, 0.25, 0.35), 0 V → the knobs. Interpolates in macro space, Mix is left out. Dead below ±0.45 V |
 | In 4 | **Freeze / clear** | Schmitt trigger at +1 V / +0.5 V. Held gate = freeze (from the rising edge). A pulse up to 25 ms = clear instead. Below −1 V = clear |
 | Out 1 / Out 2 | **Mix L / R** | Plateau's saturation, linear up to 7.35 V, at most 9.8 V |
@@ -118,7 +118,7 @@ samples is only accurate to 1e-3 samples, and the error recirculates).
 In acdc-workbench:
 
 ```bash
-LINK=plusram SRC=owl/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
+LINK=plusram SRC=owl/patches/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
 ```
 
 Upload first with `tools/owl_write.py owl-patches/builds/Plateau/Plateau.syx --run` (RAM only),
@@ -162,7 +162,7 @@ keinem Slot gespeichert.
 | Regler 2 | **Space** | Size 0,01 … 4 (Plateaus Kurve, Size = 0,01 + 3,99·p²) und Pre-Delay 0 … 150 ms (·p²) gemeinsam. Geglättet (80 ms) gegen Doppler-Stufen |
 | Regler 3 | **Decay** | RT60 0,3 … 30 s, unabhängig von Space. Über 96 %: Freeze, unter 93 % wieder aus |
 | Regler 4 | **Character** | 0–30 % Echo → Plate (Tank-Diffusion steigt, Eingangs-Diffusion blendet bei 5–15 % ein). 30–55 % Plate (Modulationstiefe 0,5 → 3, Tempo ×1 → ×2). 55–100 % dunkel/Ambient (High Cut 14 kHz → 1,8 kHz, Low Cut 14 → 120 Hz, Tiefe 3 → 10, Tempo ×2 → ×6, Form 0,5 → 0,7) |
-| In 1 / In 2 | **Audio L / R** | Bleibt In 2 300 ms lang unter −66 dBFS, während In 1 Signal führt, gilt R := L (zurück über −54 dBFS). Das AC/DC erkennt keine gesteckten Kabel. Beide Eingänge laufen durch die Sperre für die Blockraten-Linien (`../AcdcInput.h`) |
+| In 1 / In 2 | **Audio L / R** | Bleibt In 2 300 ms lang unter −66 dBFS, während In 1 Signal führt, gilt R := L (zurück über −54 dBFS). Das AC/DC erkennt keine gesteckten Kabel. Beide Eingänge laufen durch die Sperre für die Blockraten-Linien (`../../include/AcdcInput.h`) |
 | In 3 | **Morph** | ±5 V. +5 V → Snapshot „Abyss“ (Space 1,0, Decay 0,92, Character 0,9), −5 V → „Tight“ (0,15, 0,25, 0,35), 0 V → die Regler. Interpoliert im Makroraum, Mix bleibt außen vor. Tot unter ±0,45 V |
 | In 4 | **Freeze / Clear** | Schmitt-Trigger bei +1 V / +0,5 V. Gehaltenes Gate = Freeze (ab der steigenden Flanke). Ein Puls bis 25 ms = stattdessen Clear. Unter −1 V = Clear |
 | Out 1 / Out 2 | **Mix L / R** | Plateaus Sättigung, linear bis 7,35 V, höchstens 9,8 V |
@@ -256,7 +256,7 @@ von 10000 Samples ist nur auf 1e-3 Samples genau, und der Fehler läuft im Kreis
 In der acdc-workbench:
 
 ```bash
-LINK=plusram SRC=owl/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
+LINK=plusram SRC=owl/patches/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
 ```
 
 Hochladen zuerst mit `tools/owl_write.py owl-patches/builds/Plateau/Plateau.syx --run` (nur RAM),

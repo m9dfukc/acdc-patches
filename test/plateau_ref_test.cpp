@@ -1,4 +1,4 @@
-// Plateau core (plateau/PlateauCore.h, float) against the original (ValleyRackFree 2.4.5,
+// Plateau core (patches/plateau/PlateauCore.h, float) against the original (ValleyRackFree 2.4.5,
 // src/Plateau/Dattorro.cpp, double). Needs the original sources: VALLEY_SRC=<…/src> test/run.sh
 // The core runs with compat245 = true (tank at 44.1 kHz, LFO phases 0, 1 s freeze fade, as 2.4.5).
 // Built twice by run.sh:
@@ -6,7 +6,7 @@
 //   float (as on the device) differs more, because a float delay time of ~10000 samples is only
 //                            accurate to 1e-3 samples and the error recirculates (< −45 dB)
 // With compat245 = false the core must differ clearly from 2.4.5.
-#include "../plateau/PlateauCore.h"
+#include "../patches/plateau/PlateauCore.h"
 #include "Plateau/Dattorro.hpp"
 #include <cmath>
 #include <cstdio>

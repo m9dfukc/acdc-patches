@@ -1,4 +1,4 @@
-// Host test for owl/AcdcInput.h: canceller for the block-rate lines (period 8 samples)
+// Host test for owl/include/AcdcInput.h: canceller for the block-rate lines (period 8 samples)
 #include "AcdcInput.h"
 #include <cmath>
 #include <cstdio>

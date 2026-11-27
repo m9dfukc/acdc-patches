@@ -1,4 +1,4 @@
-// Host test for owl/schliere/ (SchlierePatch.hpp with SchliereMPatch, SchliereWPatch.hpp, SchliereOPatch.hpp, SchliereSPatch.hpp, SchliereLPatch.hpp): transfer function from the impulse response,
+// Host test for owl/patches/schliere/ (SchlierePatch.hpp with SchliereMPatch, SchliereWPatch.hpp, SchliereOPatch.hpp, SchliereSPatch.hpp, SchliereLPatch.hpp): transfer function from the impulse response,
 // checked against the figures from the model's manual and against the calculation.
 #include "SchliereWPatch.hpp" // includes SchlierePatch.hpp with SchliereWPatch
 #include "SchliereOPatch.hpp"

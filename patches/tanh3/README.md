@@ -44,7 +44,7 @@ fx7a, dimmed LEDs put the LED PWM line (2321 Hz and multiples) on the outputs (D
 ### Build and test
 
 ```bash
-SRC=owl/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
+SRC=owl/patches/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 tools/test_owl_dsp.sh
 ```
 
@@ -94,7 +94,7 @@ vor fx7a bringen gedimmte LEDs die LED-PWM-Linie (2321 Hz und Vielfache) an die 
 ### Bauen und testen
 
 ```bash
-SRC=owl/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
+SRC=owl/patches/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 tools/test_owl_dsp.sh
 ```
 

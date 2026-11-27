@@ -96,13 +96,13 @@ Details are in the header of `SchlierePatch.hpp`, for A in `SchliereAPatch.hpp`,
 ### Build and test
 
 ```bash
-SRC=owl/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereA SchliereAPatch SchliereAPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereM SchliereMPatch SchliereMPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereW SchliereWPatch SchliereWPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereO SchliereOPatch SchliereOPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereS SchliereSPatch SchliereSPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereL SchliereLPatch SchliereLPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereA SchliereAPatch SchliereAPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereM SchliereMPatch SchliereMPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereW SchliereWPatch SchliereWPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereO SchliereOPatch SchliereOPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereS SchliereSPatch SchliereSPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereL SchliereLPatch SchliereLPatch.hpp
 tools/test_owl_dsp.sh
 ```
 
@@ -206,13 +206,13 @@ Einzelheiten stehen im Kopf von `SchlierePatch.hpp`, für A in `SchliereAPatch.h
 ### Bauen und testen
 
 ```bash
-SRC=owl/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereA SchliereAPatch SchliereAPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereM SchliereMPatch SchliereMPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereW SchliereWPatch SchliereWPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereO SchliereOPatch SchliereOPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereS SchliereSPatch SchliereSPatch.hpp
-SRC=owl/schliere tools/build_owl_patch.sh SchliereL SchliereLPatch SchliereLPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereZ SchlierePatch SchlierePatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereA SchliereAPatch SchliereAPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereM SchliereMPatch SchliereMPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereW SchliereWPatch SchliereWPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereO SchliereOPatch SchliereOPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereS SchliereSPatch SchliereSPatch.hpp
+SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereL SchliereLPatch SchliereLPatch.hpp
 tools/test_owl_dsp.sh
 ```
 

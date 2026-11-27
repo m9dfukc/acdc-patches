@@ -1,7 +1,7 @@
 #ifndef __PLATEAU_PROFILE_PATCH_HPP__
 #define __PLATEAU_PROFILE_PATCH_HPP__
 
-/* Measurement patch, not a music patch: Plateau (plateau/PlateauPatch.hpp) unchanged, plus
+/* Measurement patch, not a music patch: Plateau (patches/plateau/PlateauPatch.hpp) unchanged, plus
  * cycle probes per section and a latency test of the memory segments. Sound and controls are
  * those of Plateau. Why: Plateau reports 51 % CPU, about 5000 cycles per sample, but runs only
  * about 1000 instructions per sample (measurement log D82).
@@ -55,7 +55,7 @@ static inline void plateauProbe(int n){
 }
 
 #define PLATEAU_PROBE(n) plateauProbe(n)
-#include "../plateau/PlateauPatch.hpp"
+#include "../patches/plateau/PlateauPatch.hpp"
 
 class PlateauProfilePatch : public PlateauPatch {
 public:

@@ -38,7 +38,7 @@
  */
 
 #include "Patch.h"
-#include "../AcdcInput.h"
+#include "../../include/AcdcInput.h"
 #include "PlateauCore.h"
 #include "PlateauControl.h"
 
