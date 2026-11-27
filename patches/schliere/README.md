@@ -19,13 +19,17 @@ and how strongly feedback modulation at in 4 may act.
 
 | Slot on acdc1 | Name | File, class | Tap | Feedback modulation (in 4) | CPU |
 |---|---|---|---|---|---|
-| 6 | **SchliereA** | `SchliereAPatch.hpp`, `SchliereAPatch` | crossfade between 7 taps, CV unsmoothed | unsmoothed, hard limit at ±1 | 30 % |
-| 7 | **SchliereM** | `SchliereMPatch.hpp`, `SchliereMPatch` | chain length, continuous (morph) | smoothed, 1.5 kHz | 49–54 % |
-| 8 | **SchliereZ** | `SchlierePatch.hpp`, `SchlierePatch` | crossfade, band-limited | smoothed, 1.5 kHz | 33 % |
-| 9 | **SchliereW** | `SchliereWPatch.hpp`, `SchliereWPatch` | as Z | smoothed, 12 kHz | 32–36 % |
-| 10 | **SchliereO** | `SchliereOPatch.hpp`, `SchliereOPatch` | as Z | unsmoothed, computed at 96 kHz | 43 % |
-| 11 | **SchliereS** | `SchliereSPatch.hpp`, `SchliereSPatch` | as Z | as O, in 4 smoothed very lightly (12 kHz) | 39 % |
-| 12 | **SchliereL** | `SchliereLPatch.hpp`, `SchliereLPatch` | as Z, chain of 160 stages | as S | 70 % |
+| – | **SchliereA** | `SchliereAPatch.hpp`, `SchliereAPatch` | crossfade between 7 taps, CV unsmoothed | unsmoothed, hard limit at ±1 | 30 % |
+| – | **SchliereM** | `SchliereMPatch.hpp`, `SchliereMPatch` | chain length, continuous (morph) | smoothed, 1.5 kHz | 49–54 % |
+| – | **SchliereZ** | `SchlierePatch.hpp`, `SchlierePatch` | crossfade, band-limited | smoothed, 1.5 kHz | 33 % |
+| – | **SchliereW** | `SchliereWPatch.hpp`, `SchliereWPatch` | as Z | smoothed, 12 kHz | 32–36 % |
+| – | **SchliereO** | `SchliereOPatch.hpp`, `SchliereOPatch` | as Z | unsmoothed, computed at 96 kHz | 43 % |
+| 7 | **SchliereS** | `SchliereSPatch.hpp`, `SchliereSPatch` | as Z | as O, in 4 smoothed very lightly (12 kHz) | 35 % |
+| 8 | **SchliereL** | `SchliereLPatch.hpp`, `SchliereLPatch` | as Z, chain of 160 stages | as S | 59 % |
+
+Slots as of 2026-11-27. A, M, Z, W and O were removed from the device on 2026-11-23, their sources
+and builds remain. The CPU load of S and L was measured under firmware fx9a (caches on) with the
+current build flags (D94), that of the other variants under fx7a with the old flags (D80).
 
 - **A (alt, "old")** is version 3 from 2026-11-18, the original. Audio-rate modulation of tap
   or feedback makes it glitchy and rough: part of the sidebands fold back at fs/2, the
@@ -48,12 +52,12 @@ and how strongly feedback modulation at in 4 may act.
   two sections in series). Taps L 2, 44 … 254 poles, R 2, 56 … 320 poles, tail 320 poles. The
   taps are 2.6 times further apart: 21 notches (L) and 26 to 27 (R) between two detents instead
   of 8 and 10, and the delay at each tap is 2.6 times longer (1 kHz, Q 16: 1.3 s at L, 1.6 s
-  at R). With feedback the peaks sit 2.6 times closer. On slot 12 since 2026-11-21, not listened to
-  yet.
+  at R). With feedback the peaks sit 2.6 times closer. On slot 8 (slot 12 until 2026-11-23), not
+  listened to yet.
 - **M (morph)** does not crossfade but changes the chain length continuously. The chain stays
   a pure allpass at every setting: tap modulation shifts the delay (slow: vibrato, fast:
   FM-like) instead of fading notches in and out. Out 4 is the sum (L + R)/2 here, its notches
-  move with the tap. Too tame for the user, but still on slot 7.
+  move with the tap. Too tame for the user, removed from the device on 2026-11-23.
 
 Measured on the computer with the patch code (measurement log D80). "Folded" = lines created by
 folding at fs/2, relative to the wanted signal:
@@ -128,13 +132,17 @@ Regler 3 (Tap) tut und wie stark die Feedback-Modulation an In 4 wirken darf.
 
 | Slot auf acdc1 | Name | Datei, Klasse | Tap | Feedback-Modulation (In 4) | CPU |
 |---|---|---|---|---|---|
-| 6 | **SchliereA** | `SchliereAPatch.hpp`, `SchliereAPatch` | Überblendung zwischen 7 Abgriffen, CV ungeglättet | ungeglättet, harte Grenze bei ±1 | 30 % |
-| 7 | **SchliereM** | `SchliereMPatch.hpp`, `SchliereMPatch` | Länge der Kette stufenlos (Morph) | geglättet, 1,5 kHz | 49–54 % |
-| 8 | **SchliereZ** | `SchlierePatch.hpp`, `SchlierePatch` | Überblendung, bandbegrenzt | geglättet, 1,5 kHz | 33 % |
-| 9 | **SchliereW** | `SchliereWPatch.hpp`, `SchliereWPatch` | wie Z | geglättet, 12 kHz | 32–36 % |
-| 10 | **SchliereO** | `SchliereOPatch.hpp`, `SchliereOPatch` | wie Z | ungeglättet, mit 96 kHz gerechnet | 43 % |
-| 11 | **SchliereS** | `SchliereSPatch.hpp`, `SchliereSPatch` | wie Z | wie O, In 4 ganz leicht geglättet (12 kHz) | 39 % |
-| 12 | **SchliereL** | `SchliereLPatch.hpp`, `SchliereLPatch` | wie Z, Kette aus 160 Stufen | wie S | 70 % |
+| – | **SchliereA** | `SchliereAPatch.hpp`, `SchliereAPatch` | Überblendung zwischen 7 Abgriffen, CV ungeglättet | ungeglättet, harte Grenze bei ±1 | 30 % |
+| – | **SchliereM** | `SchliereMPatch.hpp`, `SchliereMPatch` | Länge der Kette stufenlos (Morph) | geglättet, 1,5 kHz | 49–54 % |
+| – | **SchliereZ** | `SchlierePatch.hpp`, `SchlierePatch` | Überblendung, bandbegrenzt | geglättet, 1,5 kHz | 33 % |
+| – | **SchliereW** | `SchliereWPatch.hpp`, `SchliereWPatch` | wie Z | geglättet, 12 kHz | 32–36 % |
+| – | **SchliereO** | `SchliereOPatch.hpp`, `SchliereOPatch` | wie Z | ungeglättet, mit 96 kHz gerechnet | 43 % |
+| 7 | **SchliereS** | `SchliereSPatch.hpp`, `SchliereSPatch` | wie Z | wie O, In 4 ganz leicht geglättet (12 kHz) | 35 % |
+| 8 | **SchliereL** | `SchliereLPatch.hpp`, `SchliereLPatch` | wie Z, Kette aus 160 Stufen | wie S | 59 % |
+
+Slots mit Stand 2026-11-27. A, M, Z, W und O sind seit 2026-11-23 vom Gerät entfernt, Quellen und
+Builds bleiben. Die Rechenlast von S und L ist unter der Firmware fx9a (Caches an) mit den heutigen
+Build-Flags gemessen (D94), die der übrigen Varianten unter fx7a mit den alten Flags (D80).
 
 - **A (alt)** ist Fassung 3 vom 2026-11-18, das Original. Moduliert man Tap oder Feedback mit
   Audio-Rate, wird es glitchig und rau: Teile der Seitenbänder falten über fs/2 zurück, die
@@ -157,13 +165,13 @@ Regler 3 (Tap) tut und wie stark die Feedback-Modulation an In 4 wirken darf.
   in Reihe). Abgriffe L 2, 44 … 254 Pole, R 2, 56 … 320 Pole, Tail 320 Pole. Die Abgriffe
   liegen 2,6-mal so weit auseinander: zwischen zwei Rastpunkten 21 Kerben (L) bzw. 26 bis 27
   (R) statt 8 und 10, und die Laufzeit an jedem Abgriff ist 2,6-mal so lang (1 kHz, Q 16:
-  1,3 s an L, 1,6 s an R). Mit Feedback liegen die Spitzen 2,6-mal so dicht. Seit 2026-11-21 auf
-  Slot 12, noch nicht gehört.
+  1,3 s an L, 1,6 s an R). Mit Feedback liegen die Spitzen 2,6-mal so dicht. Auf Slot 8 (bis
+  2026-11-23 Slot 12), noch nicht gehört.
 - **M (Morph)** überblendet nicht, sondern ändert die Länge der Kette stufenlos. Die Kette
   bleibt in jeder Stellung ein reiner Allpass: Tap-Modulation verschiebt die Laufzeit
   (langsam ein Vibrato, schnell FM-artig) statt Kerben ein- und auszublenden. Out 4 ist hier
-  die Summe (L + R)/2, deren Kerben mit dem Tap wandern. Dem Nutzer zu zahm, liegt aber
-  weiter auf Slot 7.
+  die Summe (L + R)/2, deren Kerben mit dem Tap wandern. Dem Nutzer zu zahm, seit 2026-11-23
+  vom Gerät entfernt.
 
 Gemessen am Rechner mit dem Patch-Code (messlog D80). „Gefaltet“ = Linien, die durch Faltung
 an fs/2 entstehen, gegen das Nutzsignal:

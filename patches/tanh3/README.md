@@ -38,7 +38,8 @@ bright signals the band-limited output overshoots 5 V by up to ≈ 10 %.
 
 ### On acdc1
 
-Slot 5, version 2, 48–52 % CPU (D56, D62). The LEDs are dimmed with the level. On firmware before
+Slot 6 on acdc1, version 2, 45 % CPU under firmware fx9a with the current build flags (D94; 48–52 %
+before, D56, D62). The LEDs are dimmed with the level. On firmware before
 fx7a, dimmed LEDs put the LED PWM line (2321 Hz and multiples) on the outputs (D67).
 
 ### Build and test
@@ -48,7 +49,7 @@ SRC=owl/patches/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 tools/test_owl_dsp.sh
 ```
 
-Run from acdc-workbench. The build goes to `owl/vendor/builds/Tanh3/` and is byte-identical to slot 5.
+Run from acdc-workbench. The build goes to `owl/vendor/builds/Tanh3/` and is byte-identical to slot 6.
 In this repository alone, `test/run.sh` runs the host tests (`test/dsp_test.cpp` for Tanh3).
 `TANH3_TAPS` (default 48, a multiple of 4) sets the FIR length at 192 kHz.
 
@@ -88,7 +89,8 @@ angefahrenen, hellen Signalen überschwingt der bandbegrenzte Ausgang 5 V um bis
 
 ### Auf acdc1
 
-Slot 5, Fassung 2, 48–52 % CPU (D56, D62). Die LEDs werden mit dem Pegel gedimmt. Auf Firmware
+Slot 6 auf acdc1, Fassung 2, 45 % CPU unter der Firmware fx9a mit den heutigen Build-Flags (D94, vorher
+48–52 %: D56, D62). Die LEDs werden mit dem Pegel gedimmt. Auf Firmware
 vor fx7a bringen gedimmte LEDs die LED-PWM-Linie (2321 Hz und Vielfache) an die Ausgänge (D67).
 
 ### Bauen und testen
@@ -99,5 +101,5 @@ tools/test_owl_dsp.sh
 ```
 
 Aufruf aus der acdc-workbench. Der Build landet in `owl/vendor/builds/Tanh3/` und ist bytegleich
-mit Slot 5. Nur in diesem Repo laufen die Host-Tests mit `test/run.sh` (`test/dsp_test.cpp` für
+mit Slot 6. Nur in diesem Repo laufen die Host-Tests mit `test/run.sh` (`test/dsp_test.cpp` für
 Tanh3). `TANH3_TAPS` (Standard 48, ein Vielfaches von 4) setzt die FIR-Länge bei 192 kHz.

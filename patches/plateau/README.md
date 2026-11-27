@@ -13,8 +13,8 @@ A port of **Plateau** by Valley Audio (Dale Johnson), the plate reverb after Jon
 out, plus wet mono and an energy CV.
 
 **Status:** host tests pass (see below). Ran on the device from RAM (2026-11-23, measurement log
-D82): memory as planned, **CPU 51 %** under fx7a, **35 %** with the instruction cache on (fx8a, D84). Not yet heard, not stored
-in a slot.
+D82): memory as planned, **CPU 51 %** under fx7a, **35 %** with the instruction cache on (fx8a, D84), **27 %** with both caches on and the
+current build flags (fx9a, D94). Stored in slot 5 of acdc1 since 2026-11-23 (D89). Not yet heard.
 
 ### Controls
 
@@ -130,7 +130,8 @@ then read the placement report and the CPU load with `tools/owl_read.py`.
 2. CPU load: 51 % instead of the estimated 5–15 % (D82). Cause found with the measurement patch
    `test/PlateauProfilePatch.hpp` (D83): the firmware runs with the instruction and data caches
    of the MCU switched off, every section is about five times slower than necessary. The
-   SDRAM pre-delay costs about 1 %. Then the block-rate lines under this load (D69).
+   SDRAM pre-delay costs about 1 %. With both caches on (firmware fx9a) and the current build flags
+   the load is 27 % (D94). Still open: the block-rate lines under this load (D69).
 3. RT60 and freeze by ear; κ (`PLATEAU_DECAY_KAPPA`) if the decay sounds off.
 4. Thresholds of the normalling of in 2 against the noise of the open input.
 5. Gate at in 4 with real 1 ms triggers and held gates.
@@ -151,8 +152,8 @@ Entwurf von 1997, als OWL-Patch für das AC/DC. Der Hall selbst ist ein Float-Po
 heraus, dazu Wet mono und eine Energie-CV.
 
 **Stand:** Host-Tests bestanden (siehe unten). Am Gerät aus dem RAM gelaufen (2026-11-23, Messlog
-D82): Speicher wie geplant, **CPU 51 %** unter fx7a, **35 %** mit eingeschaltetem Befehls-Cache (fx8a, D84). Noch nicht gehört, in
-keinem Slot gespeichert.
+D82): Speicher wie geplant, **CPU 51 %** unter fx7a, **35 %** mit eingeschaltetem Befehls-Cache (fx8a, D84), **27 %** mit beiden Caches und den
+heutigen Build-Flags (fx9a, D94). Seit 2026-11-23 auf Slot 5 von acdc1 gespeichert (D89). Noch nicht gehört.
 
 ### Bedienung
 
@@ -268,7 +269,8 @@ dann die Speichermeldung und die Rechenlast mit `tools/owl_read.py` lesen.
 2. Rechenlast: 51 % statt der geschätzten 5–15 % (D82). Ursache mit dem Mess-Patch
    `test/PlateauProfilePatch.hpp` gefunden (D83): Die Firmware läuft mit ausgeschaltetem Befehls-
    und Daten-Cache der MCU, jeder Abschnitt ist etwa fünfmal langsamer als nötig. Der Pre-Delay im
-   SDRAM kostet etwa 1 %. Danach die Blockraten-Linien bei dieser Last (D69).
+   SDRAM kostet etwa 1 %. Mit beiden Caches (Firmware fx9a) und den heutigen Build-Flags sind es
+   27 % (D94). Noch offen: die Blockraten-Linien bei dieser Last (D69).
 3. RT60 und Freeze nach Gehör; κ (`PLATEAU_DECAY_KAPPA`), falls das Decay nicht passt.
 4. Schwellen der Normalisierung von In 2 gegen das Rauschen des offenen Eingangs.
 5. Gate an In 4 mit echten 1-ms-Triggern und gehaltenen Gates.
