@@ -40,4 +40,14 @@ if [ -n "${VALLEY_SRC:-}" ] && [ -f "$VALLEY_SRC/Plateau/Dattorro.cpp" ]; then
 else
   echo "== plateau_ref_test skipped (set VALLEY_SRC to the src folder of ValleyRackFree 2.4.5)"
 fi
+if command -v node >/dev/null; then
+  echo "== web_protocol_test"
+  # WEB_REF_BUILDS="dir1 dir2": OwlProgram build folders with patch.bin and <Name>.syx
+  # shellcheck disable=SC2086
+  node "$ROOT/test/web_protocol_test.mjs" ${WEB_REF_BUILDS:-} | grep -v '^ok ' || true
+  # shellcheck disable=SC2086
+  node "$ROOT/test/web_protocol_test.mjs" ${WEB_REF_BUILDS:-} >/dev/null || STATUS=1
+else
+  echo "== web_protocol_test skipped (needs node)"
+fi
 exit $STATUS

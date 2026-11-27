@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AC/DC Patch Loader</title>
+<meta name="description" content="Load OWL patches into an AC/DC over Web MIDI: run from RAM or store in a slot.">
+<style>
+:root {
+  --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #66665f; --line: #deded8;
+  --accent: #2459a8; --accent-text: #ffffff; --warn: #8a5a00; --err: #b3261e; --ok: #1e6b3a; --sel: #e7eefb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161615; --panel: #1f1f1d; --text: #ecece8; --muted: #a2a29a; --line: #34342f;
+    --accent: #7aa7ec; --accent-text: #0d1a2e; --warn: #e3b34f; --err: #f08b82; --ok: #77c995; --sel: #24324a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161615; --panel: #1f1f1d; --text: #ecece8; --muted: #a2a29a; --line: #34342f;
+  --accent: #7aa7ec; --accent-text: #0d1a2e; --warn: #e3b34f; --err: #f08b82; --ok: #77c995; --sel: #24324a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+h2 { font-size: 1.1rem; margin: 0 0 12px; }
+p { margin: 0 0 10px; }
+a { color: var(--accent); }
+.lead { color: var(--muted); margin-bottom: 20px; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 0 0 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, select, input[type=file] { font: inherit; }
+button { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; max-width: 100%; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 12px 0 0; }
+dt { color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { color: var(--muted); font-weight: 500; }
+td.num { white-space: nowrap; }
+td.acts { white-space: nowrap; }
+td.acts button { padding: 2px 8px; font-size: .9em; }
+tr.cur td { background: var(--sel); }
+td.empty { color: var(--muted); text-align: center; padding: 16px; }
+.tag { font-size: .75em; border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+.warn { color: var(--warn); }
+.err { color: var(--err); }
+.ok { color: var(--ok); }
+.small { font-size: .9em; color: var(--muted); }
+#staged { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+#progress { width: 100%; height: 8px; margin-top: 12px; }
+#log { list-style: none; padding: 0; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em; max-height: 260px; overflow: auto; }
+#log li { padding: 2px 0; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; max-width: min(560px, calc(100vw - 32px)); padding: 20px; }
+dialog::backdrop { background: rgb(0 0 0 / .45); }
+dialog label { display: block; margin: 6px 0 10px; }
+ul.notes { margin: 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>AC/DC Patch Loader</h1>
+  <p class="lead">Load OWL patches into a Befaco / Rebel Technology AC/DC over USB MIDI, right from the browser: run one from RAM or store it in a slot. Runs in Chromium-based browsers (Chrome, Edge, Brave, Opera) on desktop; Firefox only with a site permission, Safari not at all. Part of <a href="https://github.com/m9dfukc/acdc-patches">acdc-patches</a>.</p>
+
+  <section>
+    <h2>1 · Connect</h2>
+    <div class="row">
+      <button id="connectBtn" class="primary">Connect</button>
+      <select id="port" aria-label="MIDI port"><option value="">– connect first –</option></select>
+      <button id="refreshBtn" disabled>Refresh</button>
+    </div>
+    <dl id="devInfo"></dl>
+  </section>
+
+  <section>
+    <h2>2 · Stored patches</h2>
+    <div class="table"><table>
+      <thead><tr><th>Slot</th><th>Name</th><th>Size</th><th>CRC32</th><th></th></tr></thead>
+      <tbody id="slots"></tbody>
+    </table></div>
+    <p class="small" style="margin-top:10px">Activate sends a program change: the patch runs until the next power cycle, nothing is stored. The ↓ buttons download a slot as a backup.</p>
+  </section>
+
+  <section>
+    <h2>3 · Choose a patch file</h2>
+    <p class="small">A patch binary (.bin, e.g. OwlProgram <code>Build/patch.bin</code>) or a SysEx file with upload packets (.syx), for example from the <a href="https://github.com/m9dfukc/acdc-patches/releases">acdc-patches releases</a>.</p>
+    <div class="row"><input type="file" id="file" accept=".bin,.syx" aria-label="Patch file"></div>
+    <div id="staged" hidden>
+      <dl id="stagedInfo"></dl>
+      <div class="row" style="margin-top:12px">
+        <button id="runBtn" class="primary">Run from RAM</button>
+        <span class="small">or</span>
+        <select id="slot" aria-label="Slot"></select>
+        <button id="storeBtn">Store in slot</button>
+      </div>
+    </div>
+    <progress id="progress" max="1" value="0" hidden></progress>
+  </section>
+
+  <section>
+    <h2>Log</h2>
+    <ul id="log"></ul>
+  </section>
+
+  <section>
+    <h2>Good to know</h2>
+    <ul class="notes small">
+      <li>Only tested with the AC/DC, on the firmware fork <a href="https://github.com/m9dfukc/OpenWare/releases">v22.4.r-fx9a</a>. The protocol is the one of all OpenWare devices, but other devices were never tried.</li>
+      <li>The page sends only: patch upload, run, store, slot download, read-only requests and program changes. It cannot erase slots or touch settings, firmware or the bootloader.</li>
+      <li>Before a slot is overwritten, the page downloads it and offers it as a .syx file. The download is checked against the size and CRC the device reports. On the official firmware, downloads while a patch runs can arrive damaged, and in rare cases the device stops sending MIDI until a power cycle. If a backup fails, nothing is written.</li>
+      <li>Close other pages that talk to the device (the OWL patch library pages poll it) and pick the patch before an app opens the AC/DC's audio stream: on some firmware a patch change during streaming breaks playback until the stream restarts.</li>
+      <li>The page checks a file's header (magic, link address, size) before the upload, the firmware checks it again. A patch built for another OWL platform can still load and misbehave: use files made for your device.</li>
+      <li>No data leaves your computer: the page has no server part, MIDI goes straight from the browser to the device.</li>
+    </ul>
+  </section>
+
+  <dialog id="dlg">
+    <h2 id="dlgTitle"></h2>
+    <div id="dlgBody"></div>
+    <div class="row" style="justify-content:flex-end; margin-top:12px">
+      <button id="dlgCancel">Cancel</button>
+      <button id="dlgOk" class="primary">OK</button>
+    </div>
+  </dialog>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -26,10 +26,13 @@ test/run.sh
 ```
 
 Needs a C++17 compiler. Exit code 0 means all cases pass. With `VALLEY_SRC=<ValleyRackFree 2.4.5>/src` it also compares the Plateau core with the original code.
+If `node` is installed, it also tests the protocol code of the patch loader page (`test/web_protocol_test.mjs`); with `WEB_REF_BUILDS="<build folder> …"` (each with `patch.bin` and a `.syx` of it) it compares the upload packets byte by byte.
 
 ## Prebuilt patches
 
 The [releases](https://github.com/m9dfukc/acdc-patches/releases) carry ready-built SysEx files of Tanh3, SchliereS, SchliereL and Plateau, the same builds that are stored on the test module of acdc-workbench. CPU load on the AC/DC with the [firmware fork](https://github.com/m9dfukc/OpenWare) `v22.4.r-fx9a`, knobs near 12 o'clock: Tanh3 45 %, SchliereS 35 %, SchliereL 59 % (depends on the knobs), Plateau 27 %. Plateau is linked to AXI SRAM (`plusram`) and needs about 600 KB of patch memory; it has only been tried on that firmware.
+
+**Patch loader in the browser:** <https://m9dfukc.github.io/acdc-patches/> uploads a `.bin` or `.syx` from your computer over Web MIDI: run from RAM or store in a slot, no toolchain needed. Download the files from a release first. Before a slot is overwritten the page downloads the old patch and offers it as a file. It works in Chromium-based browsers (Chrome, Edge, Brave, Opera) on desktop, not in Safari. It sends only upload, run, store, slot download, read-only requests and program changes, never erase, settings, firmware or bootloader commands. Tested only with the AC/DC on firmware `v22.4.r-fx9a` (run, store in an empty slot, download byte-identical). The page lives in [`docs/`](docs/) as plain HTML and JavaScript, GitHub Pages serves it from `main` without a build step.
 
 Each patch comes as `.bin` and as `.syx`. The `.syx` holds only the upload packets, in the same format as the SysEx files of the OWL patch library, with no command to run or store the patch. OwlProgram uploads a `.bin` with `FirmwareSender` (that is what `make load` and `make store` call):
 

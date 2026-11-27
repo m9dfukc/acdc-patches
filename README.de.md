@@ -26,10 +26,13 @@ test/run.sh
 ```
 
 Braucht einen C++17-Compiler. Exit-Code 0 heißt: alle Fälle bestanden. Mit `VALLEY_SRC=<ValleyRackFree 2.4.5>/src` vergleicht es zusätzlich den Plateau-Kern mit dem Original-Code.
+Ist `node` installiert, testet es auch den Protokoll-Code der Ladeseite im Browser (`test/web_protocol_test.mjs`). Mit `WEB_REF_BUILDS="<Build-Ordner> …"` (je mit `patch.bin` und einer `.syx` davon) vergleicht es die Upload-Pakete Byte für Byte.
 
 ## Fertige Patches
 
 Die [Releases](https://github.com/m9dfukc/acdc-patches/releases) enthalten fertig gebaute SysEx-Dateien von Tanh3, SchliereS, SchliereL und Plateau, genau die Builds, die auf dem Testmodul der acdc-workbench liegen. Rechenlast am AC/DC mit dem [Firmware-Fork](https://github.com/m9dfukc/OpenWare) `v22.4.r-fx9a`, Regler etwa auf 12 Uhr: Tanh3 45 %, SchliereS 35 %, SchliereL 59 % (hängt von den Reglern ab), Plateau 27 %. Plateau ist ins AXI-SRAM gelinkt (`plusram`) und braucht etwa 600 KB Patch-Speicher, ausprobiert nur mit dieser Firmware.
+
+**Ladeseite im Browser:** <https://m9dfukc.github.io/acdc-patches/> lädt eine `.bin` oder `.syx` vom eigenen Rechner per Web MIDI hoch: aus dem RAM starten oder in einem Slot speichern, ohne Toolchain. Die Dateien vorher aus einem Release herunterladen. Bevor ein Slot überschrieben wird, lädt die Seite den alten Patch herunter und bietet ihn als Datei an. Sie läuft in Chromium-Browsern (Chrome, Edge, Brave, Opera) am Desktop, nicht in Safari. Sie schickt nur Upload, Start, Speichern, Slot-Download, lesende Abfragen und Program Changes, nie Löschen, Settings, Firmware oder Bootloader. Getestet nur mit dem AC/DC und der Firmware `v22.4.r-fx9a` (Start, Speichern in einen leeren Slot, Download bytegleich). Die Seite liegt als reines HTML und JavaScript in [`docs/`](docs/), GitHub Pages liefert sie ohne Build-Schritt aus `main` aus.
 
 Jeder Patch liegt als `.bin` und als `.syx` bei. Die `.syx` enthält nur die Upload-Pakete, im selben Format wie die SysEx-Dateien der OWL-Patch-Library, ohne Befehl zum Starten oder Speichern. OwlProgram lädt eine `.bin` mit `FirmwareSender` hoch (das rufen `make load` und `make store` auf):
 
