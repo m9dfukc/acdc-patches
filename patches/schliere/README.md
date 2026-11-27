@@ -106,7 +106,7 @@ SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereL SchliereLPatch Schli
 tools/test_owl_dsp.sh
 ```
 
-Builds go to `owl-patches/builds/<name>/` and are byte-identical to the slots on acdc1. W, O, S, L and M
+Builds go to `owl/vendor/builds/<name>/` and are byte-identical to the slots on acdc1. W, O, S, L and M
 live in files of their own: even a derived class in `SchlierePatch.hpp` changes the binary of
 SchliereZ. The name is part of the binary, so the builds are named like the slots.
 
@@ -216,7 +216,7 @@ SRC=owl/patches/schliere tools/build_owl_patch.sh SchliereL SchliereLPatch Schli
 tools/test_owl_dsp.sh
 ```
 
-Die Builds landen in `owl-patches/builds/<Name>/` und sind bytegleich mit den Slots auf acdc1.
+Die Builds landen in `owl/vendor/builds/<Name>/` und sind bytegleich mit den Slots auf acdc1.
 W, O, S, L und M stehen in eigenen Dateien: Schon eine abgeleitete Klasse in `SchlierePatch.hpp`
 ändert das Binary von SchliereZ. Der Name steckt im Binary, deshalb
 heißen die Builds wie die Slots.

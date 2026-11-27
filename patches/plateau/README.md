@@ -121,7 +121,7 @@ In acdc-workbench:
 LINK=plusram SRC=owl/patches/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
 ```
 
-Upload first with `tools/owl_write.py owl-patches/builds/Plateau/Plateau.syx --run` (RAM only),
+Upload first with `tools/owl_write.py owl/vendor/builds/Plateau/Plateau.syx --run` (RAM only),
 then read the placement report and the CPU load with `tools/owl_read.py`.
 
 ### Open on the device
@@ -259,7 +259,7 @@ In der acdc-workbench:
 LINK=plusram SRC=owl/patches/plateau tools/build_owl_patch.sh Plateau PlateauPatch PlateauPatch.hpp
 ```
 
-Hochladen zuerst mit `tools/owl_write.py owl-patches/builds/Plateau/Plateau.syx --run` (nur RAM),
+Hochladen zuerst mit `tools/owl_write.py owl/vendor/builds/Plateau/Plateau.syx --run` (nur RAM),
 dann die Speichermeldung und die Rechenlast mit `tools/owl_read.py` lesen.
 
 ### Offen am Gerät

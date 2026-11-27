@@ -48,7 +48,7 @@ SRC=owl/patches/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 tools/test_owl_dsp.sh
 ```
 
-Run from acdc-workbench. The build goes to `owl-patches/builds/Tanh3/` and is byte-identical to slot 5.
+Run from acdc-workbench. The build goes to `owl/vendor/builds/Tanh3/` and is byte-identical to slot 5.
 In this repository alone, `test/run.sh` runs the host tests (`test/dsp_test.cpp` for Tanh3).
 `TANH3_TAPS` (default 48, a multiple of 4) sets the FIR length at 192 kHz.
 
@@ -98,6 +98,6 @@ SRC=owl/patches/tanh3 tools/build_owl_patch.sh Tanh3 Tanh3Patch Tanh3Patch.hpp
 tools/test_owl_dsp.sh
 ```
 
-Aufruf aus der acdc-workbench. Der Build landet in `owl-patches/builds/Tanh3/` und ist bytegleich
+Aufruf aus der acdc-workbench. Der Build landet in `owl/vendor/builds/Tanh3/` und ist bytegleich
 mit Slot 5. Nur in diesem Repo laufen die Host-Tests mit `test/run.sh` (`test/dsp_test.cpp` für
 Tanh3). `TANH3_TAPS` (Standard 48, ein Vielfaches von 4) setzt die FIR-Länge bei 192 kHz.
