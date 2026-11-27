@@ -30,6 +30,8 @@ function send(bytes) {
   const b = bytes[0];
   if (b === 0xf0) {
     if (bytes[1] !== P.MFR || bytes[2] !== P.OMNI || !P.ALLOWED_SYSEX.has(bytes[3])) throw new Error("refused to send this SysEx message");
+    // an erase must name exactly one patch slot, otherwise the firmware wipes everything
+    if (bytes[3] === P.CMD.ERASE && !P.isEraseMessage(bytes)) throw new Error("refused to send this erase message");
   } else if ((b & 0xf0) === 0xb0) {
     if (bytes[1] !== P.CC_REQUEST || !P.ALLOWED_REQUESTS.has(bytes[2])) throw new Error("refused to send this CC");
   } else if ((b & 0xf0) !== 0xc0) {
@@ -239,6 +241,41 @@ async function runStaged() {
   setProgress(null);
 }
 
+/* Before a slot is overwritten or erased: download it and offer it as a file,
+   or take the user's own copy (already checked against size and CRC). */
+async function backupBeforeChange(slot, old, copy) {
+  if (copy) { log(`Using your local copy of slot ${slot} as the backup (size and CRC match).`); return; }
+  log(`Downloading slot ${slot} (${old.name}) as a backup…`);
+  copy = await downloadSlot(slot, f => setProgress(f));
+  if (copy.length !== old.size || P.crc32(copy) !== old.crc) throw new Error("backup download does not match the slot. Nothing was changed");
+  saveFile(P.toSyx(copy), `slot${String(slot).padStart(2, "0")}_${safeName(old.name)}.syx`);
+  log(`Backup of slot ${slot} offered as a file. Keep it.`, "ok");
+}
+
+async function eraseSlot(slot) {
+  const old = S.names.get(slot);
+  if (!old) return;
+  const plan = await confirmErase(slot, old);
+  if (!plan) return;
+  await job("Erase", async () => {
+    await backupBeforeChange(slot, old, plan.copy);
+    const key = m => [...m].filter(([k]) => k !== slot).map(([k, v]) => `${k}:${v.name}:${v.size}:${v.crc}`).join("|");
+    const before = key(S.names);
+    const errs = errorsIn(await collect(() => send(P.eraseMessage(slot)), { quietMs: 1000, maxMs: 4000 }));
+    if (errs.length) throw new Error(errs.join("; "));
+    const t0 = performance.now();
+    while (performance.now() - t0 < 20000) {
+      await readNames();
+      if (!S.names.has(slot)) break;
+      await sleep(500);
+    }
+    if (key(S.names) !== before) throw new Error("other slots changed after the erase! Check the list and your backups");
+    if (S.names.has(slot)) throw new Error(`slot ${slot} still holds ${S.names.get(slot).name}`);
+    log(`Erased slot ${slot} (${old.name}). All other slots are unchanged.`, "ok");
+  });
+  setProgress(null);
+}
+
 async function storeStaged() {
   const st = guardStaged();
   const slot = +$("#slot").value;
@@ -247,16 +284,7 @@ async function storeStaged() {
   const plan = await confirmStore(slot, old, st);
   if (!plan) return;
   await job("Store", async () => {
-    if (old) {
-      let copy = plan.copy;
-      if (!copy) {
-        log(`Downloading slot ${slot} (${old.name}) as a backup…`);
-        copy = await downloadSlot(slot, f => setProgress(f));
-        if (copy.length !== old.size || P.crc32(copy) !== old.crc) throw new Error("backup download does not match the slot. Nothing was written");
-        saveFile(P.toSyx(copy), `slot${String(slot).padStart(2, "0")}_${safeName(old.name)}.syx`);
-        log(`Backup of slot ${slot} offered as a file. Keep it before you go on.`, "ok");
-      } else log(`Using your local copy of slot ${slot} as the backup (size and CRC match).`);
-    }
+    if (old) await backupBeforeChange(slot, old, plan.copy);
     await upload(st.data, f => setProgress(f));
     const errs = errorsIn(await collect(() => send(P.storeMessage(slot)), { quietMs: 1000, maxMs: 4000 }));
     if (errs.length) throw new Error(errs.join("; "));
@@ -304,23 +332,35 @@ const ackOk = () => !$("#ackDev") || $("#ackDev").checked;
 function confirmDevice(title, text, okLabel) {
   return dialog(title, `<p>${esc(text)}</p>${deviceWarning()}`, okLabel, ackOk);
 }
+// Optional own copy of the slot instead of the backup download
+const copyField = slot => `<p class="small">Or use your own copy of that slot instead of the download (.bin or .syx, checked against size and CRC):<br><input type="file" id="copyFile" accept=".bin,.syx"></p>`;
+async function readCopy(slot, old) {
+  const f = $("#copyFile")?.files?.[0];
+  if (!f) return { copy: null };
+  try {
+    const { data } = P.loadFileBytes(new Uint8Array(await f.arrayBuffer()));
+    if (data.length !== old.size || P.crc32(data) !== old.crc) { log(`${f.name} is not a copy of slot ${slot} (${data.length} B, CRC ${P.hex8(P.crc32(data))}).`, "err"); return false; }
+    return { copy: data };
+  } catch (e) { log(`${f.name}: ${e.message}`, "err"); return false; }
+}
+function confirmErase(slot, old) {
+  const slot1 = slot === 1 ? `<p class="warn">Slot 1 is the patch that starts at power-on when nothing else is chosen. Without it the device may start with no patch.</p><label><input type="checkbox" id="ackSlot1"> Yes, erase slot 1</label>` : "";
+  return dialog(`Erase slot ${slot} (${old.name})?`,
+    `<p>Slot ${slot} holds <b>${esc(old.name)}</b> (${old.size} B, CRC ${P.hex8(old.crc)}). It is downloaded first and offered as a .syx file. Only after a good download is the slot erased. The other slots keep their numbers, slot ${slot} stays empty.</p>` +
+    copyField(slot) + slot1 + deviceWarning() +
+    `<p class="small">The erase restarts the running patch. Close apps that stream audio to the device first.</p>`, "Erase",
+    () => ackOk() && (!$("#ackSlot1") || $("#ackSlot1").checked),
+    () => readCopy(slot, old));
+}
 function confirmStore(slot, old, st) {
   const occupied = old ? `<p>Slot ${slot} holds <b>${esc(old.name)}</b> (${old.size} B, CRC ${P.hex8(old.crc)}). It will be downloaded first and offered as a .syx file. Only after a good download is the slot overwritten.</p>
-    <p class="small">Or use your own copy of that slot instead of the download (.bin or .syx, checked against size and CRC):<br><input type="file" id="copyFile" accept=".bin,.syx"></p>` :
+    ${copyField(slot)}` :
     `<p>Slot ${slot} is empty.</p>`;
   const slot1 = slot === 1 ? `<p class="warn">Slot 1 is the patch that starts at power-on when nothing else is chosen.</p><label><input type="checkbox" id="ackSlot1"> Yes, replace slot 1</label>` : "";
   return dialog(`Store ${st.info.name} in slot ${slot}?`, occupied + slot1 + deviceWarning() +
     `<p class="small">After storing, the device runs the patch from the slot.</p>`, "Store",
     () => ackOk() && (!$("#ackSlot1") || $("#ackSlot1").checked),
-    async () => {
-      const f = $("#copyFile")?.files?.[0];
-      if (!f) return { copy: null };
-      try {
-        const { data } = P.loadFileBytes(new Uint8Array(await f.arrayBuffer()));
-        if (data.length !== old.size || P.crc32(data) !== old.crc) { log(`${f.name} is not a copy of slot ${slot} (${data.length} B, CRC ${P.hex8(P.crc32(data))}).`, "err"); return false; }
-        return { copy: data };
-      } catch (e) { log(`${f.name}: ${e.message}`, "err"); return false; }
-    });
+    () => old ? readCopy(slot, old) : { copy: null });
 }
 
 /* ───────── staging ───────── */
@@ -358,7 +398,8 @@ function render() {
       <td class="num">${kb(n.size)}</td><td class="mono">${P.hex8(n.crc)}</td>
       <td class="acts"><button data-act="pc" data-slot="${n.slot}" ${S.busy ? "disabled" : ""}>Activate</button>
         <button data-act="syx" data-slot="${n.slot}" ${S.busy ? "disabled" : ""}>↓ .syx</button>
-        <button data-act="bin" data-slot="${n.slot}" ${S.busy ? "disabled" : ""}>↓ .bin</button></td></tr>`).join("")
+        <button data-act="bin" data-slot="${n.slot}" ${S.busy ? "disabled" : ""}>↓ .bin</button>
+        <button data-act="erase" data-slot="${n.slot}" class="danger" ${S.busy ? "disabled" : ""}>Erase</button></td></tr>`).join("")
       : `<tr><td colspan="5" class="empty">No stored patches.</td></tr>`;
 
   const st = S.staged;
@@ -396,6 +437,7 @@ function init() {
     if (!b) return;
     const slot = +b.dataset.slot;
     if (b.dataset.act === "pc") activate(slot);
+    else if (b.dataset.act === "erase") eraseSlot(slot).catch(e => log(e.message, "err"));
     else backupSlot(slot, b.dataset.act);
   };
   $("#file").onchange = e => { if (e.target.files[0]) stageFile(e.target.files[0]); e.target.value = ""; };

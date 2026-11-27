@@ -23,9 +23,20 @@ for (const v of [0, 1, 40, 0x7f, 0x80, 0xdeadbeef, 0xffffffff]) check(P.decodeIn
 check(P.encodeInt(5).length === 5, "encoded int is 5 bytes");
 
 // Only the allowed commands can be built
-for (const c of [0x13, 0x14, 0x15, 0x16, 0x17, 0x7d, 0x7e, 0x03]) throws(() => P.sysex(c), `sysex 0x${c.toString(16)} refused`);
+for (const c of [0x13, 0x15, 0x16, 0x17, 0x7d, 0x7e, 0x03]) throws(() => P.sysex(c), `sysex 0x${c.toString(16)} refused`);
+// Erase: never without a slot (= whole storage), never 0 (out of bounds), 40 (resource 0) or 255 (everything)
+throws(() => P.sysex(0x14), "erase without slot refused");
+throws(() => P.sysex(0x14, [0, 0, 0, 0]), "erase with 4-byte slot refused");
+for (const s of [0, 40, 41, 51, 255, 256, 511, -1, 1.5, NaN, "9"]) throws(() => P.eraseMessage(s), `erase slot ${s} refused`);
+for (const s of [1, 2, 9, 39]) {
+  const m = P.eraseMessage(s);
+  check(m.length === 10 && same(m, [0xf0, 0x7d, 0x52, 0x14, ...P.encodeInt(s), 0xf7]) && P.isEraseMessage(m), `erase slot ${s} layout`);
+}
+check(!P.isEraseMessage([0xf0, 0x7d, 0x52, 0x14, 0xf7]), "guard rejects erase without slot");
+check(!P.isEraseMessage([0xf0, 0x7d, 0x52, 0x14, ...P.encodeInt(255), 0xf7]), "guard rejects erase of slot 255");
+check(!P.isEraseMessage([0xf0, 0x7d, 0x52, 0x14, ...P.encodeInt(40), 0xf7]), "guard rejects erase of slot 40");
 for (const v of [3, 4, 26, 0x7f]) throws(() => P.request(v), `request ${v} refused`);
-for (const s of [0, -1, 41, 1.5, NaN]) {
+for (const s of [0, -1, 40, 41, 1.5, NaN]) {
   throws(() => P.storeMessage(s), `store slot ${s} refused`);
   throws(() => P.sendSlotMessage(s), `send slot ${s} refused`);
   throws(() => P.programChange(s), `program change ${s} refused`);

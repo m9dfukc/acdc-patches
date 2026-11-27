@@ -9,20 +9,23 @@ export const CC_REQUEST = 67;     // REQUEST_SETTINGS
 
 export const CMD = {
   PRESET_NAME: 0x01, RESOURCE_NAME: 0x04,
-  UPLOAD: 0x10, STORE: 0x11, RUN: 0x12, SEND: 0x18,
+  UPLOAD: 0x10, STORE: 0x11, RUN: 0x12, ERASE: 0x14, SEND: 0x18,
   FW_VERSION: 0x20, DEVICE_ID: 0x21, PROGRAM_MESSAGE: 0x22,
   DEVICE_STATS: 0x23, PROGRAM_STATS: 0x24, PROGRAM_ERROR: 0x30,
 };
 
-// The only SysEx commands this page may send. Erase (0x14), settings (0x15/0x16),
-// firmware flash (0x13), resource save (0x17), reset (0x7d) and bootloader (0x7e)
-// are deliberately missing: an erase without a slot number wipes the whole
-// patch storage.
-export const ALLOWED_SYSEX = new Set([CMD.UPLOAD, CMD.STORE, CMD.RUN, CMD.SEND]);
+// The only SysEx commands this page may send. Settings (0x15/0x16), firmware
+// flash (0x13), resource save (0x17), reset (0x7d) and bootloader (0x7e) are
+// deliberately missing. Erase (0x14) is allowed only through eraseMessage(),
+// which always carries one patch slot: see there.
+export const ALLOWED_SYSEX = new Set([CMD.UPLOAD, CMD.STORE, CMD.RUN, CMD.ERASE, CMD.SEND]);
 // The only CC67 request values this page may send (all read-only).
 export const ALLOWED_REQUESTS = new Set([0x01, 0x20, 0x21, 0x23, 0x24]);
 
-export const MAX_SLOT = 40;              // MAX_NUMBER_OF_PATCHES, setPatchSlot accepts 1..40
+// Patch slots 1..39. The firmware maps slot - 1 < MAX_NUMBER_OF_PATCHES - 1 (40) to
+// patches, slot 40.. to resources (ProgramManager.cpp eraseFlashTask,
+// MidiHandler::handleFirmwareSendCommand), so slot 40 would hit resource 0.
+export const MAX_SLOT = 39;
 export const DATA_PER_PACKET = 210;      // 240 encoded bytes, same as FirmwareSender
 export const MAX_PROGRAM_SIZE = 144 * 1024;  // MAX_SYSEX_PROGRAM_SIZE (Source/device.h)
 export const PATCH_MAGIC = 0xdadac0de;
@@ -80,6 +83,7 @@ export const hex8 = n => "0x" + (n >>> 0).toString(16).padStart(8, "0");
 
 export function sysex(cmd, payload = []) {
   if (!ALLOWED_SYSEX.has(cmd)) throw new Error(`SysEx command 0x${cmd.toString(16)} is not allowed`);
+  if (cmd === CMD.ERASE && payload.length !== 5) throw new Error("erase needs exactly one slot number");
   return [0xf0, MFR, OMNI, cmd, ...payload, 0xf7];
 }
 export function request(value) {
@@ -94,6 +98,20 @@ export const runMessage = () => sysex(CMD.RUN);
 export function storeMessage(slot) {
   if (!Number.isInteger(slot) || slot < 1 || slot > MAX_SLOT) throw new Error(`bad slot ${slot}`);
   return sysex(CMD.STORE, encodeInt(slot));
+}
+/* Erase one stored patch. MidiHandler::handleFlashEraseCommand: with no slot
+   number the firmware erases the WHOLE storage, and eraseFromFlash() takes the
+   slot as uint8_t, where 0xff also means "everything" and 0 reads out of bounds.
+   So the slot is checked here, encoded, decoded again and must be 5 bytes. */
+export function eraseMessage(slot) {
+  if (!Number.isInteger(slot) || slot < 1 || slot > MAX_SLOT) throw new Error(`bad slot ${slot}`);
+  const n = encodeInt(slot);
+  if (n.length !== 5 || decodeInt(n) !== slot) throw new Error("internal error in the slot number");
+  return sysex(CMD.ERASE, n);
+}
+export function isEraseMessage(m) {
+  return m.length === 10 && m[0] === 0xf0 && m[3] === CMD.ERASE && m[9] === 0xf7 &&
+    (() => { const s = decodeInt(m.slice(4, 9)); return s >= 1 && s <= MAX_SLOT; })();
 }
 export function sendSlotMessage(slot) {
   if (!Number.isInteger(slot) || slot < 1 || slot > MAX_SLOT) throw new Error(`bad slot ${slot}`);

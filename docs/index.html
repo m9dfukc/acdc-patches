@@ -34,6 +34,8 @@ button, select, input[type=file] { font: inherit; }
 button { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled { opacity: .45; cursor: default; }
+button.danger { color: var(--err); }
+button.danger:hover:not(:disabled) { border-color: var(--err); }
 button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; max-width: 100%; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 12px 0 0; }
@@ -85,7 +87,7 @@ ul.notes { margin: 0; padding-left: 20px; }
       <thead><tr><th>Slot</th><th>Name</th><th>Size</th><th>CRC32</th><th></th></tr></thead>
       <tbody id="slots"></tbody>
     </table></div>
-    <p class="small" style="margin-top:10px">Activate sends a program change: the patch runs until the next power cycle, nothing is stored. The ↓ buttons download a slot as a backup.</p>
+    <p class="small" style="margin-top:10px">Activate sends a program change: the patch runs until the next power cycle, nothing is stored. The ↓ buttons download a slot as a backup. Erase deletes one slot after downloading it as a backup; the other slots keep their numbers.</p>
   </section>
 
   <section>
@@ -113,8 +115,8 @@ ul.notes { margin: 0; padding-left: 20px; }
     <h2>Good to know</h2>
     <ul class="notes small">
       <li>Only tested with the AC/DC, on the firmware fork <a href="https://github.com/m9dfukc/OpenWare/releases">v22.4.r-fx9a</a>. The protocol is the one of all OpenWare devices, but other devices were never tried.</li>
-      <li>The page sends only: patch upload, run, store, slot download, read-only requests and program changes. It cannot erase slots or touch settings, firmware or the bootloader.</li>
-      <li>Before a slot is overwritten, the page downloads it and offers it as a .syx file. The download is checked against the size and CRC the device reports. On the official firmware, downloads while a patch runs can arrive damaged, and in rare cases the device stops sending MIDI until a power cycle. If a backup fails, nothing is written.</li>
+      <li>The page sends only: patch upload, run, store, erase of a single slot (1–39), slot download, read-only requests and program changes. It cannot erase the whole storage or touch resources, settings, firmware or the bootloader.</li>
+      <li>Before a slot is overwritten or erased, the page downloads it and offers it as a .syx file. The download is checked against the size and CRC the device reports. On the official firmware, downloads while a patch runs can arrive damaged, and in rare cases the device stops sending MIDI until a power cycle. If a backup fails, nothing is changed.</li>
       <li>Close other pages that talk to the device (the OWL patch library pages poll it) and pick the patch before an app opens the AC/DC's audio stream: on some firmware a patch change during streaming breaks playback until the stream restarts.</li>
       <li>The page checks a file's header (magic, link address, size) before the upload, the firmware checks it again. A patch built for another OWL platform can still load and misbehave: use files made for your device.</li>
       <li>No data leaves your computer: the page has no server part, MIDI goes straight from the browser to the device.</li>
